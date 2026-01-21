@@ -1,0 +1,28 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#renderCanvas {
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+#fps {
+    position: absolute;
+    text-align: center;
+    font-size: 16px;
+    color: white;
+    top: 15px;
+    right: 10px;
+    width: 60px;
+    height: 20px;
+}
