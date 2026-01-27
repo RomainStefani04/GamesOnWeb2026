@@ -20,7 +20,7 @@ html, body {
     position: absolute;
     text-align: center;
     font-size: 16px;
-    color: white;
+    color: rgb(0, 0, 0);
     top: 15px;
     right: 10px;
     width: 60px;
