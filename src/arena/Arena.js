@@ -1,36 +1,105 @@
 import * as BABYLON from '@babylonjs/core';
 
 export class Arena {
-    constructor(scene, assetManager) {
+    constructor(scene, assetManager, city) {
         this.scene = scene;
         this.assetManager = assetManager;
+        this.city = city;
+        
+        // Configuration des villes
+        this.cityConfigs = {
+            "Shibuya": {
+            },
+            "Kyoto": {
+            },
+            "Tokyo": {
+            },
+            "Sendai": {
+            },
+            "Jigoku": {
+            }
+        };
+        
         this.init();
     }
     
     init() {
+        const config = this.cityConfigs[this.city];
+        
+        this.setupLighting(config);
+        this.setupSkybox(config);
+        this.setupFog(config);
+        this.setupGround(config);
+        this.setupEnvironment(config);
+        this.setupParticles(config);
+    }
 
-        // This creates and positions a free camera (non-mesh)
-        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), this.scene);
+    setupLighting(config) {
+    }
 
-        // This targets the camera to scene origin
-        camera.setTarget(BABYLON.Vector3.Zero());
 
-        // This attaches the camera to the canvas
-        camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
+    // SKYBOX
+    setupSkybox(config) {
+    }
 
-        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-        var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), this.scene);
 
-        // Default intensity is 1. Let's dim the light a small amount
-        light.intensity = 0.7;
+    // BROUILLARD
+    setupFog(config) {
+    }
 
-        // Our built-in 'sphere' shape.
-        var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, this.scene);
 
-        // Move the sphere upward 1/2 its height
-        sphere.position.y = 1;
+    // SOL
+    setupGround(config) {
+    }
 
-        // Our built-in 'ground' shape.
-        var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, this.scene);
-    };
+    // ENVIRONNEMENT (DÉCORS)
+    setupEnvironment(config) {
+        switch (config.ambiance) {
+            case "urban_night":
+                this.createShibuyaEnvironment();
+                break;
+            case "temple":
+                this.createKyotoEnvironment();
+                break;
+            case "rooftop":
+                this.createTokyoEnvironment();
+                break;
+            case "forest":
+                this.createSendaiEnvironment();
+                break;
+            case "hell":
+                this.createJigokuEnvironment();
+                break;
+        }
+    }
+
+    // SHIBUYA
+    createShibuyaEnvironment() {
+    }
+
+    // KYOTO
+    createKyotoEnvironment() {
+    }
+
+    // TOKYO
+    createTokyoEnvironment() {
+    }
+
+    // SENDAI
+    createSendaiEnvironment() {
+    }
+
+    // JIGOKU
+    createJigokuEnvironment() {
+    }
+
+    // PARTICULES AMBIANTES
+    setupParticles(config) {
+    }
+
+    dispose() {
+        if (this.particleSystem) {
+            this.particleSystem.dispose();
+        }
+    }
 }

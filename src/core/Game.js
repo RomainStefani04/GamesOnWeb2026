@@ -11,7 +11,7 @@ export class Game {
 
     start() {
         let divFps = document.getElementById("fps");   
-        this.sceneManager.switchTo('FightScene');
+        this.sceneManager.switchTo('MenuScene');
         
         this.engine.runRenderLoop(() => {
             divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
