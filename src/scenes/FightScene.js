@@ -3,6 +3,7 @@ import { InputManager } from "../core/InputManager";
 import { InputMapper } from "../core/InputMapper";
 import { Arena } from '../arena/Arena';
 import { AssetManager } from '../core/AssetManager';
+import { FightCamera } from '../arena/FightCamera';
 
 export class FightScene {
     constructor(engine) {
@@ -16,6 +17,7 @@ export class FightScene {
         this.inputManager = new InputManager(this.scene);
         this.inputMapper = new InputMapper(this.inputManager, "FightScene");
         this.arena = new Arena(this.scene, this.assetManager);
+        this.camera = new FightCamera(this.scene);
     }
 
     onDispose() {
@@ -23,9 +25,7 @@ export class FightScene {
     }
 
     render() {
-        if (this.inputMapper.isKeyPressed("moveRight")) {
-            console.log("Move Right");
-        }
+        this.scene.render();
     }
 
 }
