@@ -35,39 +35,39 @@ export class Arena {
     }
 
     setupLighting(config) {
+        const light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), this.scene);
+        light.intensity = 0.7;
     }
-
 
     // SKYBOX
     setupSkybox(config) {
     }
 
-
     // BROUILLARD
     setupFog(config) {
     }
 
-
     // SOL
     setupGround(config) {
+        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 100, height: 100}, this.scene);
     }
 
     // ENVIRONNEMENT (DÉCORS)
     setupEnvironment(config) {
-        switch (config.ambiance) {
-            case "urban_night":
+        switch (config) {
+            case "":
                 this.createShibuyaEnvironment();
                 break;
-            case "temple":
+            case "":
                 this.createKyotoEnvironment();
                 break;
-            case "rooftop":
+            case "":
                 this.createTokyoEnvironment();
                 break;
-            case "forest":
+            case "":
                 this.createSendaiEnvironment();
                 break;
-            case "hell":
+            case "":
                 this.createJigokuEnvironment();
                 break;
         }
