@@ -1,4 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
+import '@babylonjs/loaders';
 
 export class Arena {
     constructor(scene, assetManager, city) {
@@ -48,8 +49,14 @@ export class Arena {
     }
 
     // SOL
-    setupGround(config) {
-        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 100, height: 100}, this.scene);
+    async setupGround(config) {
+        const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 20, height: 20}, this.scene);
+        // const mat = await BABYLON.NodeMaterial.ParseFromSnippetAsync("#I4DJ9Z#4", this.scene);
+        // ground.material = mat;
+        const player = await BABYLON.ImportMeshAsync("assets/models/character.glb", this.scene).then((result) => {
+            this.mesh = result.meshes[0];
+            this.mesh.position = new BABYLON.Vector3(0, 0, 0);
+        }); 
     }
 
     // ENVIRONNEMENT (DÉCORS)
