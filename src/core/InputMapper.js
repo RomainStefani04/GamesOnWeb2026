@@ -17,28 +17,41 @@ export class InputMapper {
     }
 
     setupMenuSceneMappings() {
-        // Example: Map 'Enter' key to 'Select' action in MenuScene
-        this.selectActionKey = 'Enter';
+        this.mapKeys["select"] = 'Enter';
+        this.mapKeys["back"] = 'Escape';
+        this.mapKeys["up"] = 'ArrowUp';
+        this.mapKeys["down"] = 'ArrowDown';
     }
+
 
     setupFightSceneMappings() {
+        // Mouvements
         this.mapKeys["moveRight"] = 'KeyD';
+        this.mapKeys["moveLeft"] = 'KeyQ';
+
+        // Actions
+        this.mapKeys["jab"] = 'KeyA';
+        this.mapKeys["cross"] = 'KeyE';
     }
 
-    isKeyPressed(key) {
-        return this.inputManager.isKeyPressed(this.mapKeys[key]);
+    isKeyPressed(action) {
+        const key = this.mapKeys[action];
+        return key ? this.inputManager.isKeyPressed(key) : false;
     }
 
-    isKeyReleased(key) {
-        return this.inputManager.isKeyReleased(this.mapKeys[key]);
+    isKeyReleased(action) {
+        const key = this.mapKeys[action];
+        return key ? this.inputManager.isKeyReleased(key) : false;
     }
 
-    isMouseButtonPressed(key) {
-        return this.inputManager.isMouseButtonPressed(this.mapKeys[key]);
+    isMouseButtonPressed(action) {
+        const button = this.mapKeys[action];
+        return button !== undefined ? this.inputManager.isMouseButtonPressed(button) : false;
     }
 
-    isMouseButtonReleased(key) {
-        return this.inputManager.isMouseButtonReleased(this.mapKeys[key]);
+    isMouseButtonReleased(action) {
+        const button = this.mapKeys[action];
+        return button !== undefined ? this.inputManager.isMouseButtonReleased(button) : false;
     }
 
 }
