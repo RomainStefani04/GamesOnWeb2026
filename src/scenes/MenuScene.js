@@ -125,7 +125,7 @@ export class MenuScene {
         titleContainer.addControl(title);
 
         const subtitle = new GUI.TextBlock("subtitle");
-        subtitle.text = "CURSED BATTLE";
+        subtitle.text = "CURSED IMPACT";
         subtitle.color = "#a78bfa";
         subtitle.fontSize = 28;
         subtitle.fontFamily = "'Orbitron', sans-serif";
