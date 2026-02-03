@@ -21,9 +21,6 @@ export class AttackState extends CharacterState {
         // désactiver la hitbox (quand se sera mis en place)
     }
 
-    handleInput(inputMapper) {
-    }
-
     update(deltaTime) {
         this.elapsedTime += deltaTime;
 
@@ -34,6 +31,5 @@ export class AttackState extends CharacterState {
     }
 
     onAttackEnd() {
-        this.stateMachine.changeState('idle');
     }
 }
