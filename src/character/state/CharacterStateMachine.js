@@ -59,30 +59,24 @@ export class CharacterStateMachine {
     }
 
     handleInput(inputMapper) {
-        let stateChanged = false;
-        this.mapStateAttack.keys().forEach(input => {
-            if (inputMapper.isKeyPressed(input) && !stateChanged) {
-                this.changeState(this.mapStateAttack.get(input));
-                stateChanged = true;
+        for (const [input, state] of this.mapStateAttack.entries()) {
+            if (inputMapper.isKeyPressed(input)) {
+                this.changeState(state);
                 return;
             }
-        });
-        if (stateChanged) {return;}
+        }
         // Recuperer la cle de la valeur actuelle dans la map
         const inputCurrentState = [...this.mapStateMove.entries()].find(([key, value]) => value === this.currentState)?.[0];
-        if (inputCurrentState && inputMapper.isKeyPressed(inputCurrentState) && !stateChanged) {
+        if (inputCurrentState && inputMapper.isKeyPressed(inputCurrentState)) {
             return;
         }
-        this.mapStateMove.keys().forEach(input => {
-            if (inputMapper.isKeyPressed(input) && !stateChanged) {
-                this.changeState(this.mapStateMove.get(input));
-                stateChanged = true;
+        for (const [input, state] of this.mapStateMove.entries()) {
+            if (inputMapper.isKeyPressed(input)) {
+                this.changeState(state);
                 return;
             }
-        });
-        if (!stateChanged) {
-            this.changeState(this.states.idle);
         }
+        this.changeState(this.states.idle);
     }
 
 }

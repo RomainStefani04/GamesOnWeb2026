@@ -6,15 +6,15 @@ export class AttackState extends CharacterState {
         super(stateMachine);
         this.name = "Attack";
         this.animationName = 'attack';
-        this.attackDuration = 0.4;
         this.animationSpeed = 1.0;
         this.elapsedTime = 0;
         this.blendingSpeed = 0.1;
     }
 
     enter() {
-        this.character.playAnimation(this.animationName, false, this.animationSpeed, this.blendingSpeed);
-        this.elapsedTime = 0;
+        this.isBlocking = true;
+        let anim = this.character.playAnimation(this.animationName, false, this.animationSpeed, this.blendingSpeed);
+        anim.onAnimationGroupEndObservable.addOnce(() => this.onAttackEnd());
     }
 
     exit() {
@@ -22,14 +22,9 @@ export class AttackState extends CharacterState {
     }
 
     update(deltaTime) {
-        this.elapsedTime += deltaTime;
-
-        // Fin de l'attaque
-        if (this.elapsedTime >= this.attackDuration) {
-            this.onAttackEnd();
-        }
     }
 
     onAttackEnd() {
+        this.isBlocking = false;
     }
 }
