@@ -7,12 +7,14 @@ export class AttackState extends CharacterState {
         this.name = "Attack";
         this.animationName = 'attack';
         this.attackDuration = 0.4;
+        this.animationSpeed = 1.0;
         this.elapsedTime = 0;
+        this.blendingSpeed = 0.1;
     }
 
     enter() {
-        this.character.playAnimation(this.animationName, false);
-
+        this.character.playAnimation(this.animationName, false, this.animationSpeed, this.blendingSpeed);
+        this.elapsedTime = 0;
     }
 
     exit() {

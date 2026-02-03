@@ -8,7 +8,8 @@ export class CrossState extends AttackState {
         super(stateMachine);
         this.name = "Cross";
         this.animationName = 'cross';
-        this.attackDuration = 1.5;
+        this.attackDuration = 0.8;
+        this.animationSpeed = 2.0;
     }
 
     enter(params = {}) {

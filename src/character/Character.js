@@ -35,7 +35,7 @@ export class Character {
     }
 
    
-    playAnimation(animationName, loop = true, speedRatio = 1.0) {
+    playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0) {
         const anim = this.animationGroups[animationName.toLowerCase()];
         
         if (!anim) {
@@ -47,7 +47,18 @@ export class Character {
             this.currentAnimation.stop();
         }
 
+        for (const animGroup of Object.values(this.animationGroups)) {
+            animGroup.enableBlending = true;
+            animGroup.blendingSpeed = blendingSpeed;
+        }
+
+        if (this.currentAnimation && this.currentAnimation !== anim) {
+            this.currentAnimation.stop();
+        }
+
         this.currentAnimation = anim;
+        anim.speedRatio = speedRatio;
+        
         anim.start(loop, speedRatio, anim.from, anim.to, false);
     }
 
