@@ -4,11 +4,10 @@ export class CharacterState {
         this.stateMachine = stateMachine;
         this.character = stateMachine.character;
         this.name = "BaseState";
+        this.isBlocking = false;
     }
-
 
     enter() {}
     exit() {}
     update(deltaTime) {}
-    handleInput(inputMapper) {}
 }

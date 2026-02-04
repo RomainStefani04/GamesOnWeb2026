@@ -8,12 +8,11 @@ export class JabState extends AttackState {
         super(stateMachine);
         this.name = "Jab";
         this.animationName = 'jab';
-        this.attackDuration = 0.70;
         this.animationSpeed = 1.8;
     }
 
-    enter(params = {}) {
-        super.enter(params);
+    enter() {
+        super.enter();
     }
 
     update(deltaTime) {

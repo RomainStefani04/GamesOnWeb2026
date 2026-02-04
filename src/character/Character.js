@@ -29,12 +29,17 @@ export class Character {
         
         animationGroups.forEach(group => {
             const name = group.name.toLowerCase();
+            switch (name) {
+                case 'jab':
+                    group.from = 0;
+                    group.to = 60;
+                    break;
+            }
             this.animationGroups[name] = group;
             group.stop();
         });
     }
 
-   
     playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0) {
         const anim = this.animationGroups[animationName.toLowerCase()];
         
@@ -58,8 +63,9 @@ export class Character {
 
         this.currentAnimation = anim;
         anim.speedRatio = speedRatio;
-        
+
         anim.start(loop, speedRatio, anim.from, anim.to, false);
+        return anim;
     }
 
 
