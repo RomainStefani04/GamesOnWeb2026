@@ -1,37 +1,37 @@
 export class InputMapper {
-    constructor(inputManager, sceneName) {
+    constructor(inputManager, profile) {
         this.inputManager = inputManager;
         this.mapKeys = {};
-        this.init(sceneName);
+        this.init(profile);
     }
 
-    init(sceneName) {
-        switch (sceneName) {
-            case "MenuScene":
-                this.setupMenuSceneMappings();
+    init(profile) {
+        switch (profile) {
+            case "menu":
+                this.mapKeys = {
+                    "select" : 'Enter',
+                    "back" : 'Escape',
+                    "up" : 'ArrowUp',
+                    "down" : 'ArrowDown'
+                };
                 break;
-            case "FightScene":
-                this.setupFightSceneMappings();
+            case "player1":
+                this.mapKeys = {
+                    "moveRight" : 'KeyD',
+                    "moveLeft" : 'KeyA',
+                    "jab" : 'KeyQ',
+                    "cross" : 'KeyE'
+                };
+                break;
+            case "player2":
+                this.mapKeys = {
+                    "moveRight" : 'ArrowRight',
+                    "moveLeft" : 'ArrowLeft',
+                    "jab" : 'Numpad1',
+                    "cross" : 'Numpad2'
+                };
                 break;
         }
-    }
-
-    setupMenuSceneMappings() {
-        this.mapKeys["select"] = 'Enter';
-        this.mapKeys["back"] = 'Escape';
-        this.mapKeys["up"] = 'ArrowUp';
-        this.mapKeys["down"] = 'ArrowDown';
-    }
-
-
-    setupFightSceneMappings() {
-        // Mouvements
-        this.mapKeys["moveRight"] = 'KeyD';
-        this.mapKeys["moveLeft"] = 'KeyQ';
-
-        // Actions
-        this.mapKeys["jab"] = 'KeyA';
-        this.mapKeys["cross"] = 'KeyE';
     }
 
     isKeyPressed(action) {

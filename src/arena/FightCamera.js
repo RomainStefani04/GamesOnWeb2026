@@ -12,7 +12,7 @@ export class FightCamera {
 
         this.camera.setPosition(new BABYLON.Vector3(4, 1.4, 0));
 
-        this.camera.inputs.clear();
+        //this.camera.inputs.clear();
         this.camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
 
         this.scene.activeCamera = this.camera;
