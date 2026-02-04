@@ -6,7 +6,7 @@ export class WalkBackwardState extends CharacterState {
         super(stateMachine);
         this.name = "WalkBackward";
         this.backwardSpeedMultiplier = 0.8; //plus lent en reculant
-        this.animationSpeed = 1.5;
+        this.animationSpeed = 2.6;
         this.blendingSpeed = 0.1;
     }
 

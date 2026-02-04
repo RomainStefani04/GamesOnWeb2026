@@ -14,6 +14,9 @@ export class FightScene {
         this.sceneManager = sceneManager;
         this.level = params.level;
         this.city = params.city;
+
+        // Callback de progression
+        this.onLoadProgress = params.onLoadProgress || (() => {});
         
         this.player = null;
 
@@ -21,6 +24,14 @@ export class FightScene {
         this.deltaTime = 0;
         this.lastTime = performance.now();
         this.isReady = false;
+
+        // Promise pour signaler que le chargement est terminé
+        this.readyPromise = null;
+        this.readyResolve = null;
+        // Créer la promise
+        this.readyPromise = new Promise((resolve) => {
+            this.readyResolve = resolve;
+        });
         
         this.scene = new BABYLON.Scene(this.engine);
         this.fightCamera = new FightCamera(this.scene);
@@ -28,24 +39,55 @@ export class FightScene {
         this.initAsync();
     }
 
+    async waitForReady() {
+        return this.readyPromise;
+    }
+
     async initAsync() {
         try {
             
             // Initialiser Havok pour plus tard (collisions je pense)
+            this.onLoadProgress(5, "Initialisation du moteur physique...");
             await this.initHavok();
+            await this.delay(400);
+            this.onLoadProgress(20, "Moteur physique prêt !");
             
+            this.onLoadProgress(25, "Initialisation des systèmes...");
             this.assetManager = new AssetManager(this.scene);
             this.inputManager = new InputManager(this.scene);
             this.inputMapper = new InputMapper(this.inputManager, "FightScene");
+            await this.delay(300);
+            this.onLoadProgress(30, "Systèmes initialisés !");
+
+            this.onLoadProgress(35, "Configuration du système de combat...");
+            // Ici on foutra le système de combat
+            await this.delay(200);
+            this.onLoadProgress(40, "Système de combat prêt !");
         
-            this.setupLevel();
+            this.onLoadProgress(45, `Chargement de l'arène: ${this.city}...`);
+            await this.setupLevel();
+            this.onLoadProgress(60, "Arène chargée !");
+
+            this.onLoadProgress(65, "Chargement des personnages...");
+            await this.delay(400);
             await this.setupPlayer();
+            this.onLoadProgress(85, "Personnages prêts !");
+
+            this.onLoadProgress(95, "Finalisation...");
+            await this.delay(200); // nous sommes des menteurs
             
             this.isReady = true;
-            
+            this.onLoadProgress(100, "Prêt à combattre !");
+
+            this.readyResolve();
+
         } catch (error) {
             console.error('Erreur initialisation FightScene:', error);
         }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async initHavok() {
@@ -68,15 +110,16 @@ export class FightScene {
     }
 
 
-    setupLevel() {
+    async setupLevel() {
         console.log(`Chargement de l'arène: ${this.city}`);
         this.arena = new Arena(this.scene, this.assetManager, this.city);
+        await this.arena.waitForReady();
     }
 
     async setupPlayer() {
         this.player = new Player(this.scene, {
             name: "THE PLAYER",
-            speed: 1.3
+            speed: 2.5
         });
 
         try {

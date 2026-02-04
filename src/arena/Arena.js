@@ -9,6 +9,13 @@ export class Arena {
         
         //stocker pour pouvoir dispose()
         this.loadedMeshes = [];
+        this.isReady = false;
+
+        // Promise pour signaler que le chargement est terminé
+        this.readyPromise = new Promise((resolve, reject) => {
+            this.readyResolve = resolve;
+            this.readyReject = reject;
+        });
 
         // Configuration des villes
         this.cityConfigs = {
@@ -26,13 +33,26 @@ export class Arena {
         
         this.init();
     }
+
+    async waitForReady() {
+        return this.readyPromise;
+    }
     
-    init() {
-        const config = this.cityConfigs[this.city];
-        this.setupLighting(config);
-        this.setupGround(config);
-        this.setupParticles(config);
-        this.setupEnvironment(this.city);
+    async init() {
+        try {
+            const config = this.cityConfigs[this.city];
+            
+            this.setupLighting(config);
+            await this.setupGround(config);
+            this.setupParticles(config);
+            await this.setupEnvironment(this.city);
+            
+            this.isReady = true;
+            this.readyResolve();
+            
+        } catch (error) {
+            this.readyReject(error);
+        }
     }
 
     setupLighting(config) {
@@ -55,28 +75,28 @@ export class Arena {
     }
 
     // ENVIRONNEMENT (DÉCORS)
-    setupEnvironment(city) {
+    async setupEnvironment(city) {
         switch (city) {
             case "Shibuya":
-                this.createShibuyaEnvironment();
+                await this.createShibuyaEnvironment();
                 break;
             case "Kyoto":
-                this.createKyotoEnvironment();
+                await this.createKyotoEnvironment();
                 break;
             case "Tokyo":
-                this.createTokyoEnvironment();
+                await this.createTokyoEnvironment();
                 break;
             case "Sendai":
-                this.createSendaiEnvironment();
+                await this.createSendaiEnvironment();
                 break;
             case "Jigoku":
-                this.createJigokuEnvironment();
+                await this.createJigokuEnvironment();
                 break;
         }
     }
 
     // SHIBUYA
-    createShibuyaEnvironment() {
+    async createShibuyaEnvironment() {
     }
 
     // KYOTO
@@ -105,11 +125,11 @@ export class Arena {
     }
 
     // SENDAI
-    createSendaiEnvironment() {
+    async createSendaiEnvironment() {
     }
 
     // JIGOKU
-    createJigokuEnvironment() {
+    async createJigokuEnvironment() {
     }
 
     // PARTICULES AMBIANTES
