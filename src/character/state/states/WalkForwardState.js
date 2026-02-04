@@ -5,11 +5,12 @@ export class WalkForwardState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "WalkForward";
-        this.animationSpeed = 2.4;
+        this.animationSpeed = 4;
+        this.blendingSpeed = 0.1;
     }
 
     enter() {
-        this.character.playAnimation('walk_forward', true, this.animationSpeed);
+        this.character.playAnimation('walk_forward', true, this.animationSpeed, this.blendingSpeed);
     }
 
     exit() {}

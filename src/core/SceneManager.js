@@ -1,4 +1,5 @@
 import { FightScene } from "../scenes/FightScene";
+import { LoadingScene } from "../scenes/LoadingScene";
 import { MenuScene } from "../scenes/MenuScene";
 
 export class SceneManager {
@@ -17,9 +18,17 @@ export class SceneManager {
                 this.currentScene = new MenuScene(this.engine, this);
                 break;
             case 'FightScene':
-                this.currentScene = new FightScene(this.engine, this, params);
+                this.currentScene = new LoadingScene(this.engine, this, {
+                    targetScene: 'FightScene',
+                    targetParams: params
+                });
                 break;
         }
+    }
+
+    switchToPreloaded(sceneInstance) {
+        this.currentScene?.onDispose();
+        this.currentScene = sceneInstance;
     }
 
     getParams() {
