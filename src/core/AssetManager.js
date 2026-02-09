@@ -3,15 +3,13 @@ import * as BABYLON from '@babylonjs/core';
 export class AssetManager {
     constructor() {
         this.scene = null;
-        
-        // Containers (assets en mémoire, pas encore dans la scène)
+
         this.containers = {
             arena: null,
-            character: null,
-            ground: null
+            character: null
         };
 
-        // Juste les chemins, pas de config de positionnement
+        // Chemins des assets
         this.paths = {
             arenas: {
                 "tokyo": "assets/models/Tokyo.glb",
@@ -25,66 +23,38 @@ export class AssetManager {
 
         // Tracker les instances pour le dispose
         this.instances = [];
-        this.loaded = true;
+        this.loaded = false;
     }
 
-    /**
-     * Prépare l'AssetManager pour une nouvelle scène
-     */
     init(scene) {
         this.dispose();
         this.loaded = false;
         this.scene = scene;
     }
 
-    async loadFightAssets(arenaName) {
-        await this.createGroundContainer();
-
+    async loadFightAssets(arenaName, onProgress = () => {}) {
         const arenaPath = this.paths.arenas[arenaName.toLowerCase()];
         if (!arenaPath) {
             throw new Error(`Arène inconnue: ${arenaName}`);
         }
 
-        // Charger l'arène
+        // Étape 1 : Charger l'arène
+        onProgress(10, "アリーナ読み込み中... | Chargement de l'arène...");
         this.containers.arena = await BABYLON.LoadAssetContainerAsync(
             arenaPath,
             this.scene
         );
-        // Charger le personnage
+
+        // Étape 2 : Charger le personnage
+        onProgress(50, "キャラクター読み込み中... | Chargement du personnage...");
         this.containers.character = await BABYLON.LoadAssetContainerAsync(
             this.paths.character,
             this.scene
         );
+
+        // Chargement terminé
+        onProgress(100, "準備完了！ | Prêt !");
         this.loaded = true;
-    }
-
-    async createGroundContainer() {
-        // Créer un container vide
-        const container = new BABYLON.AssetContainer(this.scene);
-        
-        // Créer le ground
-        const ground = BABYLON.MeshBuilder.CreateGround(
-            "ground_template",
-            {
-                width: 20,
-                height: 20, 
-            },
-            this.scene
-        );
-
-        // Optionnel: ajouter un matériau par défaut
-        const material = new BABYLON.StandardMaterial("groundMat_template", this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
-        ground.material = material;
-
-        // Ajouter le mesh et le matériau au container
-        container.meshes.push(ground);
-        container.materials.push(material);
-
-        // Retirer de la scène (important!)
-        ground.setEnabled(false);
-        
-        this.containers.ground = container;
     }
 
     cloneArena() {
@@ -118,22 +88,6 @@ export class AssetManager {
             animationGroups: instance.animationGroups
         };
     }
-    
-    cloneGround() {
-        if (!this.containers.ground) {
-            throw new Error("Ground not loaded");
-        }
-
-        const instance = this.containers.ground.instantiateModelsToScene(
-            (name) => `${name}`
-        );
-
-        this.instances.push(instance);
-
-        return {
-            mesh: instance.rootNodes[0]
-        };
-    }
 
     dispose() {
         // Dispose les instances créées
@@ -144,11 +98,12 @@ export class AssetManager {
         this.instances = [];
 
         // Dispose les containers
-        this.containers.arena?.dispose();
-        this.containers.character?.dispose();
-        this.containers.arena = null;
-        this.containers.character = null;
+        Object.keys(this.containers).forEach(key => {
+            this.containers[key]?.dispose();
+            this.containers[key] = null;
+        });
 
+        this.loaded = false;
         this.scene = null;
     }
 }

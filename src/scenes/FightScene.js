@@ -15,15 +15,12 @@ export class FightScene {
 
         this.deltaTime = 0;
         this.lastTime = performance.now();
-        
-        this.init();
-    }
 
-    async init() {
+        this.player1 = null;
+        this.player2 = null;
+        this.arena = null;
+
         this.initScene();
-        await this.initAssetManager();
-        this.initPlayer();
-        this.arena = new Arena(this.scene, this.assetManager, this.city);
     }
 
     initScene() {
@@ -37,31 +34,35 @@ export class FightScene {
         );
     }
 
-    async initAssetManager() {  
-        this.assetManager.init(this.scene);
-        await this.assetManager.loadFightAssets(this.city);
+    setup() {
+        this.initPlayer();
+        this.arena = new Arena(this.scene, this.assetManager, this.city);
     }
 
     initPlayer() {
-        let clonePlayer1 = this.assetManager.cloneCharacter()
-        this.player = new Player(this.scene,
+        const clonePlayer1 = this.assetManager.cloneCharacter();
+        this.player1 = new Player(
+            this.scene,
             "player1",
-            new InputMapper(this.inputManager, "player1"), 
+            new InputMapper(this.inputManager, "player1"),
             clonePlayer1?.mesh,
             clonePlayer1?.animationGroups
         );
-        this.player.setPosition(new BABYLON.Vector3(0, 0, 0));
-    }
+        this.player1.setPosition(new BABYLON.Vector3(0, 0, 0));
 
-    // VERIFIER SI ON DISPOSE BIEN TOUT
-    onDispose() {
-        this.player?.dispose();
-        this.fightCamera?.dispose();
-        this.scene.dispose();
+        
+        const clonePlayer2 = this.assetManager.cloneCharacter();
+        this.player2 = new Player(
+            this.scene,
+            "player2",
+            new InputMapper(this.inputManager, "player2"),
+            clonePlayer2?.mesh,
+            clonePlayer2?.animationGroups
+        );
+        this.player2.setPosition(new BABYLON.Vector3(0, 0, 0));
     }
 
     render() {
-        if (this.assetManager.loaded === false) { return; }
         this.update();
         this.scene.render();
     }
@@ -71,7 +72,14 @@ export class FightScene {
         this.deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
-        this.player?.update(this.deltaTime);
+        this.player1?.update(this.deltaTime);
+        this.player2?.update(this.deltaTime);
     }
 
+    onDispose() {
+        this.player1?.dispose();
+        this.player2?.dispose();
+        this.fightCamera?.dispose();
+        this.scene?.dispose();
+    }
 }

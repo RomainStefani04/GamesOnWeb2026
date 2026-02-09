@@ -11,9 +11,20 @@ export class Arena {
     }
     
     init() {
-        this.ground = this.assetManager.cloneGround();
+        this.createGround();
         this.setupLighting();
         this.setupArena();
+    }
+
+    createGround() {
+        this.ground = BABYLON.MeshBuilder.CreateGround(
+            "ground",
+            { width: 20, height: 20 },
+            this.scene
+        );
+        const material = new BABYLON.StandardMaterial("groundMat", this.scene);
+        material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+        this.ground.material = material;
     }
 
     setupLighting() {
@@ -46,33 +57,26 @@ export class Arena {
     setupShibuyaEnvironment() {
     }
 
-    // KYOTO
     setupKyotoEnvironment() {
         this.arenaMesh.position = new BABYLON.Vector3(-1, 0, 0);
         this.arenaMesh.scaling = new BABYLON.Vector3(0.21, 0.21, 0.21);
         this.arenaMesh.rotation = new BABYLON.Vector3(0, 0, 0);
-        //ciel bleu clair
         this.scene.clearColor = new BABYLON.Color4(0.53, 0.81, 0.92, 1);
     }
 
-    // TOKYO
     setupTokyoEnvironment() {
         this.arenaMesh.position = new BABYLON.Vector3(-2.5, 0.03, -0.5);
-        //this.arenaMesh.scaling = new BABYLON.Vector3(0.21, 0.21, 0.21);
         this.arenaMesh.rotation = new BABYLON.Vector3(0, 0, 0);
     }
 
-    // SENDAI
     setupSendaiEnvironment() {
     }
 
-    // JIGOKU
     setupJigokuEnvironment() {
     }
 
     dispose() {
-        // Dispose les meshes
         this.ground?.dispose();
-        this.arena?.dispose();
+        this.arenaMesh?.dispose();
     }
 }
