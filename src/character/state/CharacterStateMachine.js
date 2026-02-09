@@ -6,8 +6,9 @@ import { CrossState } from './states/attacks/CrossState';
 
 // en gros sert à gérer les changements d'états du perso
 export class CharacterStateMachine {
-    constructor(character) {
+    constructor(character, inputMapper) {
         this.character = character;
+        this.inputMapper = inputMapper;
         this.states = {};
         this.currentState = null;
 
@@ -44,10 +45,10 @@ export class CharacterStateMachine {
     }
 
     //update de l état courant
-    update(deltaTime, inputMapper) {
+    update(deltaTime) {
         this.updateFacingInput();
         if (!this.currentState.isBlocking) {
-            this.handleInput(inputMapper);
+            this.handleInput();
         }
         this.currentState.update(deltaTime);
     }
@@ -58,20 +59,20 @@ export class CharacterStateMachine {
         this.mapStateMove.set('moveLeft', this.character.facingDirection === 1 ? this.states.walkbackward : this.states.walkforward);
     }
 
-    handleInput(inputMapper) {
+    handleInput() {
         for (const [input, state] of this.mapStateAttack.entries()) {
-            if (inputMapper.isKeyPressed(input)) {
+            if (this.inputMapper.isKeyPressed(input)) {
                 this.changeState(state);
                 return;
             }
         }
         // Recuperer la cle de la valeur actuelle dans la map
         const inputCurrentState = [...this.mapStateMove.entries()].find(([key, value]) => value === this.currentState)?.[0];
-        if (inputCurrentState && inputMapper.isKeyPressed(inputCurrentState)) {
+        if (inputCurrentState && this.inputMapper.isKeyPressed(inputCurrentState)) {
             return;
         }
         for (const [input, state] of this.mapStateMove.entries()) {
-            if (inputMapper.isKeyPressed(input)) {
+            if (this.inputMapper.isKeyPressed(input)) {
                 this.changeState(state);
                 return;
             }

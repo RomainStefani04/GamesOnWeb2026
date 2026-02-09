@@ -2,31 +2,27 @@ import * as BABYLON from '@babylonjs/core';
 
 
 export class Character {
-    constructor(scene, config = {}) {
+    constructor(scene, name, mesh, animationGroups) {
         this.scene = scene;
-        
         // Config
-        this.name = config.name;
-        this.speed = config.speed;
+        this.name = name;
+        this.speed = 2.5;
 
         // État
         this.facingDirection = 1;
         this.velocity = new BABYLON.Vector3(0, 0, 0);
         
         // Références
-        this.mesh = null;
-        this.skeleton = null;
-        this.animationGroups = {};
         this.currentAnimation = null;
-        
-
+        this.mapAnimations = {};
+        this.initMesh(mesh, animationGroups);
     }
 
-
-    initMesh(mesh, skeleton = null, animationGroups = []) {
+    // Voir si on doit le deplacer dans l'assetManager en fonction du perso 
+    // (gestion des animations différentes en fonction du glb)
+    initMesh(mesh, animationGroups) {
         this.mesh = mesh;
-        this.skeleton = skeleton;
-        
+        this.animationGroups = animationGroups || [];
         animationGroups.forEach(group => {
             const name = group.name.toLowerCase();
             switch (name) {
@@ -35,14 +31,14 @@ export class Character {
                     group.to = 60;
                     break;
             }
-            this.animationGroups[name] = group;
+            this.mapAnimations[name] = group;
             group.stop();
         });
+        console.log(this.mapAnimations)
     }
 
     playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0) {
-        const anim = this.animationGroups[animationName.toLowerCase()];
-        
+        const anim = this.mapAnimations[animationName.toLowerCase()];
         if (!anim) {
             console.warn(`Animation "${animationName}" non trouvée`);
             return;
@@ -52,7 +48,7 @@ export class Character {
             this.currentAnimation.stop();
         }
 
-        for (const animGroup of Object.values(this.animationGroups)) {
+        for (const animGroup of Object.values(this.mapAnimations)) {
             animGroup.enableBlending = true;
             animGroup.blendingSpeed = blendingSpeed;
         }
@@ -67,7 +63,6 @@ export class Character {
         anim.start(loop, speedRatio, anim.from, anim.to, false);
         return anim;
     }
-
 
     move(velocity) {
         if (!this.mesh) return;
@@ -87,9 +82,10 @@ export class Character {
         }
     }
 
-
-    getPosition() {
-        return this.mesh?.position || BABYLON.Vector3.Zero();
+    setPosition(position) {
+        if (this.mesh) {
+            this.mesh.position = position.clone();
+        }
     }
 
     dispose() {
