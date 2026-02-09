@@ -49,7 +49,6 @@ export class FightScene {
             clonePlayer1?.animationGroups
         );
         this.player1.setPosition(new BABYLON.Vector3(0, 0, 0));
-
         
         const clonePlayer2 = this.assetManager.cloneCharacter();
         this.player2 = new Player(
@@ -72,8 +71,19 @@ export class FightScene {
         this.deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
+        if (this.player1 && this.player2) {
+            this.updateFacingDirections();
+        }
         this.player1?.update(this.deltaTime);
         this.player2?.update(this.deltaTime);
+    }
+
+    updateFacingDirections() {
+        const p1z = this.player1.mesh.position.z;
+        const p2z = this.player2.mesh.position.z;
+        
+        this.player1.setFacingDirection(p1z < p2z ? 1 : -1);
+        this.player2.setFacingDirection(p2z < p1z ? 1 : -1);
     }
 
     onDispose() {

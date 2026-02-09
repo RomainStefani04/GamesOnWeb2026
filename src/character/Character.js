@@ -78,7 +78,7 @@ export class Character {
         
         this.facingDirection = direction;
         if (this.mesh) {
-            this.mesh.scaling.x = Math.abs(this.mesh.scaling.x) * direction;
+            this.mesh.rotation = new BABYLON.Vector3(0, direction === 1 ? Math.PI : 0, 0);
         }
     }
 
