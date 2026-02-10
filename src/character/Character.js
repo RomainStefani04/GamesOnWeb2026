@@ -1,25 +1,29 @@
 import * as BABYLON from '@babylonjs/core';
 
-
 export class Character {
     constructor(scene, name, mesh, animationGroups) {
         this.scene = scene;
-        // Config
         this.name = name;
         this.speed = 2.5;
 
         // État
         this.facingDirection = 1;
-        this.velocity = new BABYLON.Vector3(0, 0, 0);
-        
-        // Références
+        this.isGrounded = true;
+
+        // Physics
+        this.physicsBody = null;
+
+        // Animations
         this.currentAnimation = null;
         this.mapAnimations = {};
+
+        // Observable pour notifier les hits (remonte vers CombatSystem)
+        this.onHit = new BABYLON.Observable();
+
         this.initMesh(mesh, animationGroups);
+        this.initPhysics();
     }
 
-    // Voir si on doit le deplacer dans l'assetManager en fonction du perso 
-    // (gestion des animations différentes en fonction du glb)
     initMesh(mesh, animationGroups) {
         this.mesh = mesh;
         this.animationGroups = animationGroups || [];
@@ -34,7 +38,63 @@ export class Character {
             this.mapAnimations[name] = group;
             group.stop();
         });
-        console.log(this.mapAnimations)
+        console.log(`[${this.name}] Animations:`, Object.keys(this.mapAnimations));
+    }
+
+    initPhysics() {
+        if (!this.mesh) return;
+
+        // Tag le mesh pour identifier le character lors des collisions
+        this.mesh.metadata = { character: this, type: 'character' };
+
+        this.physicsBody = new BABYLON.PhysicsBody(
+            this.mesh,
+            BABYLON.PhysicsMotionType.DYNAMIC,
+            false,
+            this.scene
+        );
+
+        // Capsule qui englobe le perso (ajuster selon ton modèle)
+        const shape = new BABYLON.PhysicsShapeCapsule(
+            new BABYLON.Vector3(0, 0.3, 0),   // point bas
+            new BABYLON.Vector3(0, 1.5, 0),   // point haut
+            0.25,                               // rayon
+            this.scene
+        );
+
+        // Pas de rebond, friction pour pas glisser
+        shape.material = { friction: 0.8, restitution: 0 };
+
+        this.physicsBody.shape = shape;
+        this.physicsBody.setMassProperties({
+            mass: 70,
+            inertia: new BABYLON.Vector3(0, 0, 0) // bloque toutes les rotations
+        });
+
+        // Empêche le perso de dormir (sinon il freeze après un moment sans bouger)
+        this.physicsBody.disablePreStep = false;
+    }
+
+    move(velocityZ) {
+        if (!this.physicsBody) return;
+
+        const currentVel = this.physicsBody.getLinearVelocity();
+        this.physicsBody.setLinearVelocity(
+            new BABYLON.Vector3(
+                0,              // bloque X (pas de mouvement latéral)
+                currentVel.y,   // garde Y (gravité, sauts)
+                velocityZ
+            )
+        );
+    }
+
+    stop() {
+        if (!this.physicsBody) return;
+
+        const currentVel = this.physicsBody.getLinearVelocity();
+        this.physicsBody.setLinearVelocity(
+            new BABYLON.Vector3(0, currentVel.y, 0)
+        );
     }
 
     playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0) {
@@ -53,29 +113,14 @@ export class Character {
             animGroup.blendingSpeed = blendingSpeed;
         }
 
-        if (this.currentAnimation && this.currentAnimation !== anim) {
-            this.currentAnimation.stop();
-        }
-
         this.currentAnimation = anim;
         anim.speedRatio = speedRatio;
-
         anim.start(loop, speedRatio, anim.from, anim.to, false);
         return anim;
     }
 
-    move(velocity) {
-        if (!this.mesh) return;
-        
-        this.mesh.position.x += velocity.x || 0;
-        this.mesh.position.y += velocity.y || 0;
-        this.mesh.position.z += velocity.z || 0;
-    }
-
-    // à changer automatique en fonction de l'adversaire
     setFacingDirection(direction) {
         if (this.facingDirection === direction) return;
-        
         this.facingDirection = direction;
         if (this.mesh) {
             this.mesh.rotation = new BABYLON.Vector3(0, direction === 1 ? Math.PI : 0, 0);
@@ -89,6 +134,8 @@ export class Character {
     }
 
     dispose() {
-        if (this.mesh) this.mesh.dispose();
+        this.physicsBody?.dispose();
+        this.mesh?.dispose();
+        this.onHit.clear();
     }
 }

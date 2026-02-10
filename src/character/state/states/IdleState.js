@@ -9,14 +9,11 @@ export class IdleState extends CharacterState {
     }
 
     enter() {
+        this.character.stop();
         this.character.playAnimation('idle', true, this.animationSpeed, this.blendingSpeed);
     }
 
-    exit() {
-        // peut être des trucs à faire en sortant de l'état
-    }
+    exit() {}
 
-    update(deltaTime) {
-        // Logique spécifique à l'état idle (aucune idées de ce que ça peut être)
-    }
+    update(deltaTime) {}
 }

@@ -25,6 +25,23 @@ export class Arena {
         const material = new BABYLON.StandardMaterial("groundMat", this.scene);
         material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
         this.ground.material = material;
+
+        // Physics statique — les persos ne passent plus à travers
+        const groundBody = new BABYLON.PhysicsBody(
+            this.ground,
+            BABYLON.PhysicsMotionType.STATIC,
+            false,
+            this.scene
+        );
+
+        const groundShape = new BABYLON.PhysicsShapeBox(
+            new BABYLON.Vector3(0, 0, 0),
+            BABYLON.Quaternion.Identity(),
+            new BABYLON.Vector3(20, 0.1, 20),
+            this.scene
+        );
+        groundShape.material = { friction: 0.8, restitution: 0 };
+        groundBody.shape = groundShape;
     }
 
     setupLighting() {
@@ -54,8 +71,7 @@ export class Arena {
         }
     }
 
-    setupShibuyaEnvironment() {
-    }
+    setupShibuyaEnvironment() {}
 
     setupKyotoEnvironment() {
         this.arenaMesh.position = new BABYLON.Vector3(-1, 0, 0);
@@ -69,11 +85,9 @@ export class Arena {
         this.arenaMesh.rotation = new BABYLON.Vector3(0, 0, 0);
     }
 
-    setupSendaiEnvironment() {
-    }
+    setupSendaiEnvironment() {}
 
-    setupJigokuEnvironment() {
-    }
+    setupJigokuEnvironment() {}
 
     dispose() {
         this.ground?.dispose();
