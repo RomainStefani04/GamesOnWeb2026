@@ -7,11 +7,12 @@ import { Player } from '../character/Player';
 
 
 export class FightScene {
-    constructor(engine, assetManager, havokInstance, city) {
+    constructor(engine, assetManager, havokInstance, city, characters) {
         this.engine = engine;
         this.assetManager = assetManager;
         this.havokInstance = havokInstance;
         this.city = city;
+        this.characters = characters;
 
         this.deltaTime = 0;
         this.lastTime = performance.now();
@@ -40,7 +41,7 @@ export class FightScene {
     }
 
     initPlayer() {
-        const clonePlayer1 = this.assetManager.cloneCharacter();
+        const clonePlayer1 = this.assetManager.cloneCharacterByKey(this.characters.player1);
         this.player1 = new Player(
             this.scene,
             "player1",
@@ -48,9 +49,9 @@ export class FightScene {
             clonePlayer1?.mesh,
             clonePlayer1?.animationGroups
         );
-        this.player1.setPosition(new BABYLON.Vector3(0, 0, 0));
+        this.player1.setPosition(new BABYLON.Vector3(0, 0, -2));
         
-        const clonePlayer2 = this.assetManager.cloneCharacter();
+        const clonePlayer2 = this.assetManager.cloneCharacterByKey(this.characters.player2);
         this.player2 = new Player(
             this.scene,
             "player2",
@@ -58,7 +59,7 @@ export class FightScene {
             clonePlayer2?.mesh,
             clonePlayer2?.animationGroups
         );
-        this.player2.setPosition(new BABYLON.Vector3(0, 0, 0));
+        this.player2.setPosition(new BABYLON.Vector3(0, 0, 2));
     }
 
     render() {
