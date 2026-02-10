@@ -9,14 +9,12 @@ export class AttackState extends CharacterState {
         this.animationSpeed = 1.0;
         this.blendingSpeed = 0.1;
 
-        // Hitbox tracking
         this.elapsedTime = 0;
         this.hitboxActive = false;
         this.hitboxMesh = null;
         this.hitboxBody = null;
-        this.hasHit = false;         // un seul hit par attaque
+        this.hasHit = false;
 
-        // Données du coup — assignées par les sous-classes (JabState, CrossState)
         this.moveData = null;
     }
 
@@ -26,7 +24,6 @@ export class AttackState extends CharacterState {
         this.hitboxActive = false;
         this.hasHit = false;
 
-        // Stop le mouvement pendant l'attaque
         this.character.stop();
 
         let anim = this.character.playAnimation(this.animationName, false, this.animationSpeed, this.blendingSpeed);
@@ -45,19 +42,12 @@ export class AttackState extends CharacterState {
         const currentFrame = this.elapsedTime * this.animationSpeed * 60;
         const hitbox = this.moveData.hitbox;
 
-        if (currentFrame >= hitbox.activeFrame && currentFrame <= hitbox.endFrame) {
-            if (!this.hitboxActive) {
-                this.activateHitbox();
-            }
-            this.updateHitboxPosition();
+        if (!this.hitboxActive && currentFrame >= hitbox.activeFrame && currentFrame <= hitbox.endFrame) {
+            this.activateHitbox();
         } else if (this.hitboxActive) {
             this.deactivateHitbox();
         }
     }
-
-    // ==========================================
-    // HITBOX — Création / Mise à jour / Suppression
-    // ==========================================
 
     activateHitbox() {
         const hitbox = this.moveData.hitbox;
@@ -154,6 +144,7 @@ export class AttackState extends CharacterState {
      * Filtre les collisions pour ne garder que les hits valides.
      */
     onHitboxCollision(event) {
+        console.log("fdlksdklsjldkjlkqsdjlkjsqdljsqdsjql");
         // Déjà touché pendant cette attaque
         if (this.hasHit) return;
 
@@ -173,7 +164,6 @@ export class AttackState extends CharacterState {
             damage: this.moveData.damage,
             moveName: this.name
         };
-
         console.log(`[HIT] ${hitData.attacker.name} → ${hitData.defender.name} (${hitData.moveName}: ${hitData.damage} dmg)`);
 
         // Notifie via l'Observable du Character

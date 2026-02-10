@@ -32,8 +32,6 @@ export class CharacterStateMachine {
         this.mapStateAttack.set('jab', this.states.jab);
         this.mapStateAttack.set('cross', this.states.cross);
 
-        console.log("States initialized:", Object.keys(this.states));
-
         // État initial
         this.changeState(this.states.idle);
     }

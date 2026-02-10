@@ -38,7 +38,6 @@ export class Character {
             this.mapAnimations[name] = group;
             group.stop();
         });
-        console.log(`[${this.name}] Animations:`, Object.keys(this.mapAnimations));
     }
 
     initPhysics() {
@@ -64,7 +63,6 @@ export class Character {
 
         // Pas de rebond, friction pour pas glisser
         shape.material = { friction: 0.8, restitution: 0 };
-
         this.physicsBody.shape = shape;
         this.physicsBody.setMassProperties({
             mass: 70,
@@ -73,6 +71,30 @@ export class Character {
 
         // Empêche le perso de dormir (sinon il freeze après un moment sans bouger)
         this.physicsBody.disablePreStep = false;
+
+        this.afficherCapsuleDebug();
+    }
+
+    afficherCapsuleDebug() {
+        this.debugCapsule = BABYLON.MeshBuilder.CreateCapsule(
+            `debug_${this.name}`,
+            {
+                height: 1.5,       // distance entre point bas et haut + rayon*2
+                radius: 0.25,      // même rayon que la shape
+                tessellation: 16
+            },
+            this.scene
+        );
+
+        const debugMat = new BABYLON.StandardMaterial(`debugMat_${this.name}`, this.scene);
+        debugMat.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        debugMat.alpha = 0.4;
+        this.debugCapsule.material = debugMat;
+
+        // Parent au mesh → suit automatiquement le perso
+        this.debugCapsule.parent = this.mesh;
+        // Ajuster le Y pour centrer sur la shape (milieu entre point bas 0.3 et point haut 1.5)
+        this.debugCapsule.position.y = 0.9;
     }
 
     move(velocityZ) {
@@ -120,6 +142,7 @@ export class Character {
     }
 
     setFacingDirection(direction) {
+        if (this.stateMachine?.currentState?.isBlocking) return; // bloque le changement de facing pendant les attaques
         if (this.facingDirection === direction) return;
         this.facingDirection = direction;
         if (this.mesh) {

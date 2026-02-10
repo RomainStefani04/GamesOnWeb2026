@@ -4,6 +4,7 @@ import { InputMapper } from "../core/InputMapper";
 import { Arena } from '../arena/Arena';
 import { FightCamera } from '../arena/FightCamera';
 import { Player } from '../character/Player';
+import { GridMaterial } from '@babylonjs/materials';
 
 
 export class FightScene {
@@ -37,6 +38,36 @@ export class FightScene {
     setup() {
         this.initPlayer();
         this.arena = new Arena(this.scene, this.assetManager, this.city);
+        this.ajouterGridPourDev();
+    }
+
+    ajouterGridPourDev() {
+        console.log("Pour debug donc a suppr");
+        // const grid = BABYLON.MeshBuilder.CreateGround("debugGrid", { width: 20, height: 20, subdivisions: 20 }, this.scene);
+        // const gridMat = new GridMaterial("gridMat", this.scene);
+        // gridMat.majorUnitFrequency = 5;
+        // gridMat.minorUnitVisibility = 0.3;
+        // gridMat.gridRatio = 1; // 1 unité = 1 case
+        // gridMat.mainColor = new BABYLON.Color3(1, 1, 1);
+        // gridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
+        // gridMat.opacity = 0.8;
+        // grid.material = gridMat;
+        // grid.position.y = 0.01; // légèrement au-dessus du sol pour éviter le z-fighting
+        
+        const vGrid = BABYLON.MeshBuilder.CreatePlane("debugGridVertical", { width: 20, height: 10 }, this.scene);
+        const vGridMat = new GridMaterial("vGridMat", this.scene);
+        vGridMat.majorUnitFrequency = 5;
+        vGridMat.minorUnitVisibility = 0.3;
+        vGridMat.gridRatio = 0.1;
+        vGridMat.mainColor = new BABYLON.Color3(1, 1, 1);
+        vGridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
+        vGridMat.opacity = 0.6;
+        vGridMat.backFaceCulling = false;
+
+        vGrid.material = vGridMat;
+        vGrid.position.x = -0.5;   // légèrement derrière les persos (côté opposé à la caméra)
+        vGrid.position.y = 5;       // centré verticalement
+        vGrid.rotation.y = Math.PI / 2; // tourne le plan pour qu'il soit face à la caméra (plan ZY)
     }
 
     initPlayer() {
@@ -48,7 +79,7 @@ export class FightScene {
             clonePlayer1?.mesh,
             clonePlayer1?.animationGroups
         );
-        this.player1.setPosition(new BABYLON.Vector3(0, 0, 0));
+        this.player1.setPosition(new BABYLON.Vector3(0, 0, -0.5));
         
         const clonePlayer2 = this.assetManager.cloneCharacter();
         this.player2 = new Player(
@@ -58,7 +89,7 @@ export class FightScene {
             clonePlayer2?.mesh,
             clonePlayer2?.animationGroups
         );
-        this.player2.setPosition(new BABYLON.Vector3(0, 0, 0));
+        this.player2.setPosition(new BABYLON.Vector3(0, 0, 0.5));
     }
 
     render() {

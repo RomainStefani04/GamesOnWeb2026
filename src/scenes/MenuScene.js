@@ -464,7 +464,6 @@ export class MenuScene {
 
 
     startLevel(levelNumber, romajiName) {
-        console.log(`Démarrage du niveau ${levelNumber} dans la ville de ${romajiName}...`);
         this.selectedLevel = levelNumber;
         
         // Utiliser le SceneManager pour changer de scène

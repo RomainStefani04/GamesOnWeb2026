@@ -15,23 +15,27 @@
 export const MoveRegistry = {
     jab: {
         damage: 8,
-        totalFrames: 20,
+        totalFrames: 60,
         hitbox: {
-            offset: { x: 0, y: 0.9, z: 0.5 },
-            size: { x: 0.3, y: 0.3, z: 0.4 },
-            activeFrame: 3,
-            endFrame: 7
+            offset: { x: 0, y: 1.4, z: 0.825 },
+            size: { x: 0.5, y: 0.3, z: 0.5 }, // Surement z a reduire
+            activeFrame: 18,
+            endFrame: 30
+            // activeFrame: 0,
+            // endFrame: 60
         }
     },
 
     cross: {
         damage: 14,
-        totalFrames: 35,
+        totalFrames: 121,
         hitbox: {
-            offset: { x: 0, y: 0.9, z: 0.6 },
-            size: { x: 0.3, y: 0.3, z: 0.5 },
-            activeFrame: 8,
-            endFrame: 14
+            offset: { x: 0, y: 1.4, z: 0.775 },
+            size: { x: 0.5, y: 0.3, z: 0.45 }, // Surement z a reduire
+            activeFrame: 61,
+            endFrame: 73
+            // activeFrame: 0,
+            // endFrame: 121
         }
     }
 };
