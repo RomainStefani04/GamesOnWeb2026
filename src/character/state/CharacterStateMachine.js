@@ -6,11 +6,11 @@ import { CrossState } from './states/attacks/CrossState';
 
 // en gros sert à gérer les changements d'états du perso
 export class CharacterStateMachine {
-    constructor(character) {
+    constructor(character, inputMapper) {
         this.character = character;
+        this.inputMapper = inputMapper;
         this.states = {};
         this.currentState = null;
-        this.previousState = null;
 
         this.initStates();
     }
@@ -24,64 +24,60 @@ export class CharacterStateMachine {
             cross: new CrossState(this),
         };
 
+        this.mapStateMove = new Map();
+        this.mapStateMove.set('moveRight', this.states.walkforward);
+        this.mapStateMove.set('moveLeft', this.states.walkbackward);
+        
+        this.mapStateAttack = new Map();
+        this.mapStateAttack.set('jab', this.states.jab);
+        this.mapStateAttack.set('cross', this.states.cross);
+
         console.log("States initialized:", Object.keys(this.states));
 
         // État initial
-        this.changeState('idle');
+        this.changeState(this.states.idle);
     }
 
-
-    // change d'état
-    changeState(stateName) {
-        const newState = this.states[stateName];
-
-        if (!newState) {
-            console.log(`État "${stateName}" non trouvé`);
-            return;
-        }
-
-        // Sortie de l'état précédent
-        if (this.currentState) {
-            this.currentState.exit();
-            this.previousState = this.currentState;
-        }
-
-        // Entrée dans le nouvel état
+    changeState(newState) {
+        this.currentState?.exit();
         this.currentState = newState;
         this.currentState.enter();
-
-        console.log(`State: ${this.previousState?.name || 'none'} → ${this.currentState.name}`);
-    }
-
-
-    // Retourne à l'état précédent
-    returnToPreviousState() {
-        if (this.previousState) {
-            this.changeState(this.previousState.name.toLowerCase());
-        }
     }
 
     //update de l état courant
-    update(deltaTime, inputMapper) {
-        if (this.currentState) {
-            this.currentState.handleInput(inputMapper);
-            this.currentState.update(deltaTime);
+    update(deltaTime) {
+        this.updateFacingInput();
+        if (!this.currentState.isBlocking) {
+            this.handleInput();
         }
+        this.currentState.update(deltaTime);
     }
 
-    // savoir si on est dans un état précis
-    isInState(stateName) {
-        return this.currentState?.name.toLowerCase() === stateName.toLowerCase();
+    updateFacingInput() {
+        // Swap les input avancer reculer selon le facing du personnage
+        this.mapStateMove.set('moveRight', this.character.facingDirection === 1 ? this.states.walkforward : this.states.walkbackward);
+        this.mapStateMove.set('moveLeft', this.character.facingDirection === 1 ? this.states.walkbackward : this.states.walkforward);
     }
 
-
-    // règles de transition entre états
-    canTransitionTo(stateName) {
-
-        //exemple : pas d'attaque en sautant
-        if (stateName === 'attack' && this.isInState('jump')) {
-            return false;
+    handleInput() {
+        for (const [input, state] of this.mapStateAttack.entries()) {
+            if (this.inputMapper.isKeyPressed(input)) {
+                this.changeState(state);
+                return;
+            }
         }
-        return true;
+        // Recuperer la cle de la valeur actuelle dans la map
+        const inputCurrentState = [...this.mapStateMove.entries()].find(([key, value]) => value === this.currentState)?.[0];
+        if (inputCurrentState && this.inputMapper.isKeyPressed(inputCurrentState)) {
+            return;
+        }
+        for (const [input, state] of this.mapStateMove.entries()) {
+            if (this.inputMapper.isKeyPressed(input)) {
+                this.changeState(state);
+                return;
+            }
+        }
+        this.changeState(this.states.idle);
     }
+
 }

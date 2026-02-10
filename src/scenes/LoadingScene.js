@@ -2,62 +2,53 @@ import * as BABYLON from '@babylonjs/core';
 import * as GUI from '@babylonjs/gui';
 
 const CURSED_COLORS = {
-    primary: "#8b5cf6",     // violet énergie
-    secondary: "#ef4444",   // rouge impact
-    accent: "#22d3ee",      // bleu électrique
+    primary: "#8b5cf6",
+    secondary: "#ef4444",
+    accent: "#22d3ee",
     text: "#f5f3ff",
     textDim: "#a78bfa",
     dark: "#0a0614"
 };
 
+/**
+ * LoadingScene - Écran de chargement purement visuel.
+ * 
+ * N'orchestre AUCUN chargement. Affiche simplement une progression
+ * mise à jour de l'extérieur via updateProgress().
+ * Le SceneManager gère l'orchestration du chargement.
+ */
 export class LoadingScene {
-    constructor(engine, sceneManager, params = {}) {
+    constructor(engine) {
         this.engine = engine;
-        this.sceneManager = sceneManager;
-        
-        // Paramètres de la scène à charger
-        this.targetScene = params.targetScene || 'FightScene';
-        this.targetParams = params.targetParams || {};
-        
-        // État du chargement
         this.progress = 0;
-        this.loadingTasks = [];
-        this.currentTaskIndex = 0;
-        this.isLoading = false;
-        this.particleSystem = null;
-        
+        this.scene = null;
+        this.gui = null;
+        this.progressBarFill = null;
+        this.progressText = null;
+        this.percentText = null;
+
         this.init();
     }
 
     init() {
-        // Créer une scène légère pour le loading
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = new BABYLON.Color4(0.04, 0.02, 0.06, 1);
-        
-        // Caméra simple
+
         this.camera = new BABYLON.FreeCamera(
             "loadingCamera",
             new BABYLON.Vector3(0, 0, -10),
             this.scene
         );
-        
-        // Lighting
+
         this.setupLighting();
-        
-        // Background
         this.createBackground();
-        
-        // Créer l'UI
         this.createUI();
-        
-        // Démarrer le chargement
-        this.startLoading();
     }
 
     setupLighting() {
         const light = new BABYLON.HemisphericLight(
-            "loadingLight", 
-            new BABYLON.Vector3(0, 1, 0), 
+            "loadingLight",
+            new BABYLON.Vector3(0, 1, 0),
             this.scene
         );
         light.intensity = 0.7;
@@ -66,39 +57,36 @@ export class LoadingScene {
 
     createBackground() {
         const background = BABYLON.MeshBuilder.CreatePlane(
-            "background", 
-            { width: 30, height: 20 }, 
+            "background",
+            { width: 30, height: 20 },
             this.scene
         );
         background.position.z = 5;
 
         const backgroundMaterial = new BABYLON.StandardMaterial("bgMat", this.scene);
         const bgTexture = new BABYLON.DynamicTexture(
-            "bgTexture", 
-            { width: 512, height: 512 }, 
+            "bgTexture",
+            { width: 512, height: 512 },
             this.scene
         );
-        
+
         const ctx = bgTexture.getContext();
         const gradient = ctx.createLinearGradient(0, 0, 0, 512);
         gradient.addColorStop(0, "#0a0a0f");
         gradient.addColorStop(0.5, "#1a1025");
         gradient.addColorStop(1, "#2d1b3d");
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 512, 512);
         bgTexture.update();
-        
+
         backgroundMaterial.diffuseTexture = bgTexture;
         backgroundMaterial.emissiveTexture = bgTexture;
         backgroundMaterial.emissiveColor = new BABYLON.Color3(0.3, 0.2, 0.4);
         background.material = backgroundMaterial;
     }
 
-    
-
     createUI() {
-        // GUI plein écran
         this.gui = GUI.AdvancedDynamicTexture.CreateFullscreenUI("loadingUI", true, this.scene);
 
         // Container principal
@@ -120,7 +108,7 @@ export class LoadingScene {
         titleJp.shadowBlur = 20;
         container.addControl(titleJp);
 
-        // Traduction française du titre
+        // Traduction
         const titleFr = new GUI.TextBlock("titleFr");
         titleFr.text = "Chargement en cours";
         titleFr.color = CURSED_COLORS.textDim;
@@ -138,10 +126,10 @@ export class LoadingScene {
         subtitle.top = "-110px";
         container.addControl(subtitle);
 
-        // Symbole rotatif (cercle d'énergie)
+        // Symbole rotatif
         this.createRotatingSymbol(container);
-        
-        // Texte de progression (japonais + français)
+
+        // Texte de progression
         this.progressText = new GUI.TextBlock("progressText");
         this.progressText.text = "準備中... | Préparation...";
         this.progressText.color = CURSED_COLORS.textDim;
@@ -149,7 +137,7 @@ export class LoadingScene {
         this.progressText.fontFamily = "'Orbitron', sans-serif";
         this.progressText.top = "80px";
         container.addControl(this.progressText);
-        
+
         // Container barre de progression
         const progressContainer = new GUI.Rectangle("progressContainer");
         progressContainer.width = "450px";
@@ -168,8 +156,8 @@ export class LoadingScene {
         progressBarBg.color = CURSED_COLORS.primary;
         progressBarBg.background = "rgba(139, 92, 246, 0.1)";
         progressContainer.addControl(progressBarBg);
-        
-        // Barre de progression - Remplissage (CORRIGÉ)
+
+        // Barre de progression - Remplissage
         this.progressBarFill = new GUI.Rectangle("progressBarFill");
         this.progressBarFill.width = "0px";
         this.progressBarFill.height = "4px";
@@ -181,7 +169,7 @@ export class LoadingScene {
         this.progressBarFill.left = "0px";
         progressBarBg.addControl(this.progressBarFill);
 
-        // Décorations aux extrémités de la barre
+        // Décorations
         const leftDeco = this.createBarDecoration();
         leftDeco.left = "-210px";
         progressContainer.addControl(leftDeco);
@@ -189,7 +177,7 @@ export class LoadingScene {
         const rightDeco = this.createBarDecoration();
         rightDeco.left = "210px";
         progressContainer.addControl(rightDeco);
-        
+
         // Pourcentage
         this.percentText = new GUI.TextBlock("percentText");
         this.percentText.text = "0%";
@@ -202,16 +190,15 @@ export class LoadingScene {
         this.percentText.shadowBlur = 10;
         container.addControl(this.percentText);
 
-        // Conseils de jeu (japonais + français)
+        // Conseils de jeu
         const tips = [
             { jp: "ジャブで素早いコンボを！", fr: "Enchaînez des combos rapides avec le jab !" },
             { jp: "クロスは強力だが遅い", fr: "Le cross est puissant mais lent" },
             { jp: "ガードのタイミングが重要", fr: "Le timing de la garde est crucial" }
         ];
-        
+
         const randomTip = tips[Math.floor(Math.random() * tips.length)];
-        
-        // Conseil japonais
+
         const tipTextJp = new GUI.TextBlock("tipJp");
         tipTextJp.text = `ヒント: ${randomTip.jp}`;
         tipTextJp.color = CURSED_COLORS.textDim;
@@ -222,7 +209,6 @@ export class LoadingScene {
         tipTextJp.alpha = 0.8;
         container.addControl(tipTextJp);
 
-        // Conseil français
         const tipTextFr = new GUI.TextBlock("tipFr");
         tipTextFr.text = `Astuce : ${randomTip.fr}`;
         tipTextFr.color = CURSED_COLORS.text;
@@ -237,7 +223,6 @@ export class LoadingScene {
     }
 
     createRotatingSymbol(parent) {
-        // Container pour les cercles
         const symbolContainer = new GUI.Rectangle("symbolContainer");
         symbolContainer.width = "100px";
         symbolContainer.height = "100px";
@@ -246,7 +231,7 @@ export class LoadingScene {
         symbolContainer.top = "0px";
         parent.addControl(symbolContainer);
 
-        // Cercle externe avec arc (pas complet = visible en rotation)
+        // Cercle externe
         const outerCircle = new GUI.Ellipse("outerCircle");
         outerCircle.width = "80px";
         outerCircle.height = "80px";
@@ -257,7 +242,7 @@ export class LoadingScene {
         outerCircle.shadowBlur = 15;
         symbolContainer.addControl(outerCircle);
 
-        // Points/marqueurs sur le cercle externe pour montrer la rotation
+        // Marqueurs externes
         const markers = [];
         for (let i = 0; i < 4; i++) {
             const marker = new GUI.Ellipse(`marker${i}`);
@@ -280,7 +265,7 @@ export class LoadingScene {
         innerCircle.background = "transparent";
         symbolContainer.addControl(innerCircle);
 
-        // Points sur cercle interne
+        // Marqueurs internes
         const innerMarkers = [];
         for (let i = 0; i < 3; i++) {
             const marker = new GUI.Ellipse(`innerMarker${i}`);
@@ -294,22 +279,20 @@ export class LoadingScene {
             symbolContainer.addControl(marker);
         }
 
-        // Animation de rotation avec positionnement des marqueurs
+        // Animation de rotation
         let angle = 0;
-        const outerRadius = 36; // rayon pour placer les marqueurs externes
-        const innerRadius = 21; // rayon pour placer les marqueurs internes
+        const outerRadius = 36;
+        const innerRadius = 21;
 
         this.scene.registerBeforeRender(() => {
             angle += 0.02;
 
-            // Positionner les marqueurs externes en rotation
             markers.forEach((marker, i) => {
                 const markerAngle = angle + (i * Math.PI / 2);
                 marker.left = `${Math.cos(markerAngle) * outerRadius}px`;
                 marker.top = `${Math.sin(markerAngle) * outerRadius}px`;
             });
 
-            // Positionner les marqueurs internes en rotation inverse
             innerMarkers.forEach((marker, i) => {
                 const markerAngle = -angle * 1.5 + (i * Math.PI * 2 / 3);
                 marker.left = `${Math.cos(markerAngle) * innerRadius}px`;
@@ -337,101 +320,52 @@ export class LoadingScene {
 
         let frame = 0;
         const duration = 30;
-        
+
         const animationInterval = setInterval(() => {
             frame++;
             const progress = frame / duration;
             const eased = 1 - Math.pow(1 - progress, 3);
-            
+
             element.alpha = eased;
             element.scaleX = 0.9 + (0.1 * eased);
             element.scaleY = 0.9 + (0.1 * eased);
-            
+
             if (frame >= duration) {
                 clearInterval(animationInterval);
             }
         }, 16);
     }
 
-    async startLoading() {
-        this.isLoading = true;
-        
-        try {
- 
-            // Créer la scène cible
-            const targetSceneInstance = await this.loadTargetScene();
-
-            await this.delay(500);
-            
-            // Transition vers la scène chargée
-            this.sceneManager.switchToPreloaded(targetSceneInstance);
-            
-        } catch (error) {
-            console.error("Erreur de chargement:", error);
-            this.progressText.text = "Erreur !";
-            this.progressText.color = CURSED_COLORS.secondary;
-        }
-    }
-
+    /**
+     * Met à jour l'affichage de la progression.
+     * Appelé par le SceneManager pendant le chargement des assets.
+     */
     updateProgress(progress, message) {
         this.progress = Math.min(100, Math.max(0, progress));
-        
-        this.progressText.text = message;
-        
-        this.percentText.text = `${Math.round(this.progress)}%`;
-        
-        const maxWidth = 396;
-        this.progressBarFill.width = `${(this.progress / 100) * maxWidth}px`;
-        
-        if (this.progress > 80) {
-            this.progressBarFill.shadowBlur = 20;
-        }
-    }
 
-    async loadTargetScene() {
-        // Importer dynamiquement la scène
-        let SceneClass;
-        
-        switch (this.targetScene) {
-            case 'FightScene':
-                const module = await import('./FightScene.js');
-                SceneClass = module.FightScene;
-                break;
-            default:
-                throw new Error(`Scène inconnue: ${this.targetScene}`);
+        if (this.progressText) {
+            this.progressText.text = message;
         }
-        
-        // Créer l'instance avec un callback de progression
-        const sceneInstance = new SceneClass(
-            this.engine,
-            this.sceneManager,
-            {
-                ...this.targetParams,
-                onLoadProgress: (progress, message) => {
-                    this.updateProgress(progress, message);
-                }
+
+        if (this.percentText) {
+            this.percentText.text = `${Math.round(this.progress)}%`;
+        }
+
+        if (this.progressBarFill) {
+            const maxWidth = 396;
+            this.progressBarFill.width = `${(this.progress / 100) * maxWidth}px`;
+
+            if (this.progress > 80) {
+                this.progressBarFill.shadowBlur = 20;
             }
-        );
-        
-        // Attendre que la scène soit prête
-        await sceneInstance.waitForReady();
-        
-        return sceneInstance;
-    }
-
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        }
     }
 
     render() {
-        this.scene.render();
+        this.scene?.render();
     }
 
     onDispose() {
-        if (this.particleSystem) {
-            this.particleSystem.dispose();
-        }
         this.gui?.dispose();
         this.scene?.dispose();
     }

@@ -20,7 +20,7 @@ export class MenuScene {
     init() {
         this.scene = new BABYLON.Scene(this.engine);
         this.inputManager = new InputManager(this.scene);
-        this.inputMapper = new InputMapper(this.inputManager, "MenuScene");
+        this.inputMapper = new InputMapper(this.inputManager, "menu");
         
         this.setupCamera();
         this.setupLighting();
@@ -469,7 +469,7 @@ export class MenuScene {
         
         // Utiliser le SceneManager pour changer de scène
         if (this.sceneManager) {
-            this.sceneManager.switchTo('FightScene', { level: levelNumber, city: romajiName });
+            this.sceneManager.switchTo('FightScene', romajiName);
         }
     }
 

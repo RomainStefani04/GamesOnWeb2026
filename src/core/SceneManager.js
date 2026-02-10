@@ -1,43 +1,51 @@
+import { MenuScene } from "../scenes/MenuScene";
 import { FightScene } from "../scenes/FightScene";
 import { LoadingScene } from "../scenes/LoadingScene";
-import { MenuScene } from "../scenes/MenuScene";
 
 export class SceneManager {
-    constructor(engine) {
+    constructor(engine, assetManager, havokInstance) {
         this.engine = engine;
+        this.assetManager = assetManager;
+        this.havokInstance = havokInstance;
         this.currentScene = null;
-        this.sceneParams = {};
     }
 
-    switchTo(name, params = {}) {
-        this.sceneParams = params;
+    async switchTo(name, city) {
         this.currentScene?.onDispose();
+        this.currentScene = null;
 
         switch (name) {
             case 'MenuScene':
                 this.currentScene = new MenuScene(this.engine, this);
                 break;
+
             case 'FightScene':
-                this.currentScene = new LoadingScene(this.engine, this, {
-                    targetScene: 'FightScene',
-                    targetParams: params
-                });
+                await this.loadFightScene(city);
                 break;
         }
     }
-
-    switchToPreloaded(sceneInstance) {
-        this.currentScene?.onDispose();
-        this.currentScene = sceneInstance;
-    }
-
-    getParams() {
-        return this.sceneParams;
-    }
     
+    async loadFightScene(city) {
+        const loadingScene = new LoadingScene(this.engine);
+        this.currentScene = loadingScene;
+
+        const fightScene = new FightScene(
+            this.engine, this.assetManager, this.havokInstance, city
+        );
+
+        this.assetManager.init(fightScene.scene);
+        await this.assetManager.loadFightAssets(city, (progress, message) => {
+            loadingScene.updateProgress(progress, message);
+        });
+
+        fightScene.setup();
+
+        await new Promise(resolve => setTimeout(resolve, 400));
+        loadingScene.onDispose();
+        this.currentScene = fightScene;
+    }
+
     render() {
-        if (this.currentScene) {
-            this.currentScene.render();
-        }
+        this.currentScene?.render();
     }
 }
