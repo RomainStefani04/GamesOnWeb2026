@@ -13,7 +13,7 @@ export class Arena {
     init() {
         this.createGround();
         this.setupLighting();
-        //this.setupArena();
+        this.setupArena();
     }
 
     createGround() {

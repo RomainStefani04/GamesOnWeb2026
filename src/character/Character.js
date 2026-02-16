@@ -94,6 +94,7 @@ export class Character {
         mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
         mat.alpha = 0.4;
         this.hurtbox.material = mat;
+        this.hurtbox.isVisible = false;
 
         this.hurtbox.parent = this.mesh;
         this.hurtbox.position.y = 0.9;
