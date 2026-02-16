@@ -45,32 +45,32 @@ export class FightScene {
     }
 
     ajouterGridPourDev() {
-        console.log("Pour debug donc a suppr");
-        // const grid = BABYLON.MeshBuilder.CreateGround("debugGrid", { width: 20, height: 20, subdivisions: 20 }, this.scene);
-        // const gridMat = new GridMaterial("gridMat", this.scene);
-        // gridMat.majorUnitFrequency = 5;
-        // gridMat.minorUnitVisibility = 0.3;
-        // gridMat.gridRatio = 1; // 1 unité = 1 case
-        // gridMat.mainColor = new BABYLON.Color3(1, 1, 1);
-        // gridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
-        // gridMat.opacity = 0.8;
-        // grid.material = gridMat;
-        // grid.position.y = 0.01; // légèrement au-dessus du sol pour éviter le z-fighting
+        // console.log("Pour debug donc a suppr");
+        // // const grid = BABYLON.MeshBuilder.CreateGround("debugGrid", { width: 20, height: 20, subdivisions: 20 }, this.scene);
+        // // const gridMat = new GridMaterial("gridMat", this.scene);
+        // // gridMat.majorUnitFrequency = 5;
+        // // gridMat.minorUnitVisibility = 0.3;
+        // // gridMat.gridRatio = 1; // 1 unité = 1 case
+        // // gridMat.mainColor = new BABYLON.Color3(1, 1, 1);
+        // // gridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
+        // // gridMat.opacity = 0.8;
+        // // grid.material = gridMat;
+        // // grid.position.y = 0.01; // légèrement au-dessus du sol pour éviter le z-fighting
         
-        const vGrid = BABYLON.MeshBuilder.CreatePlane("debugGridVertical", { width: 20, height: 10 }, this.scene);
-        const vGridMat = new GridMaterial("vGridMat", this.scene);
-        vGridMat.majorUnitFrequency = 5;
-        vGridMat.minorUnitVisibility = 0.3;
-        vGridMat.gridRatio = 0.1;
-        vGridMat.mainColor = new BABYLON.Color3(1, 1, 1);
-        vGridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
-        vGridMat.opacity = 0.6;
-        vGridMat.backFaceCulling = false;
+        // const vGrid = BABYLON.MeshBuilder.CreatePlane("debugGridVertical", { width: 20, height: 10 }, this.scene);
+        // const vGridMat = new GridMaterial("vGridMat", this.scene);
+        // vGridMat.majorUnitFrequency = 5;
+        // vGridMat.minorUnitVisibility = 0.3;
+        // vGridMat.gridRatio = 0.1;
+        // vGridMat.mainColor = new BABYLON.Color3(1, 1, 1);
+        // vGridMat.lineColor = new BABYLON.Color3(0.5, 0.5, 1);
+        // vGridMat.opacity = 0.6;
+        // vGridMat.backFaceCulling = false;
 
-        vGrid.material = vGridMat;
-        vGrid.position.x = -0.5;   // légèrement derrière les persos (côté opposé à la caméra)
-        vGrid.position.y = 5;       // centré verticalement
-        vGrid.rotation.y = Math.PI / 2; // tourne le plan pour qu'il soit face à la caméra (plan ZY)
+        // vGrid.material = vGridMat;
+        // vGrid.position.x = -0.5;   // légèrement derrière les persos (côté opposé à la caméra)
+        // vGrid.position.y = 5;       // centré verticalement
+        // vGrid.rotation.y = Math.PI / 2; // tourne le plan pour qu'il soit face à la caméra (plan ZY)
     }
 
     initPlayer() {

@@ -69,7 +69,7 @@ export class AttackState extends CharacterState {
         debugMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
         debugMat.alpha = 0.4;
         this.hitboxMesh.material = debugMat;
-        this.hitboxMesh.isVisible = true;
+        this.hitboxMesh.isVisible = true; // Debug Pour afficher/cacher la hitbox
 
         this.hitboxMesh.metadata = {
             type: 'hitbox',
@@ -86,8 +86,14 @@ export class AttackState extends CharacterState {
             for (const mesh of scene.meshes) {
                 if (!mesh.metadata || mesh.metadata.type !== 'hurtbox') continue;
                 if (mesh.metadata.character === this.character) continue;
+                // Force la mise a jour de la position pour bien verifier
+                this.hitboxMesh.computeWorldMatrix(true);
+                this.mesh.computeWorldMatrix(true);
                 if (this.hitboxMesh.intersectsMesh(mesh, false)) {
-                    this.onHitboxCollision(mesh.metadata.character);
+                    console.log("hit")
+                    console.log(this.hitboxMesh.getAbsolutePosition());
+                    console.log(mesh.getAbsolutePosition());
+                    //this.onHitboxCollision(mesh.metadata.character);
                     return;
                 }
             }
