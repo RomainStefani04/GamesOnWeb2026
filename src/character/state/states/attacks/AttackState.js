@@ -41,10 +41,11 @@ export class AttackState extends CharacterState {
         // Convertir le temps écoulé en frame (base 60fps * vitesse d'anim)
         const currentFrame = this.elapsedTime * this.animationSpeed * 60;
         const hitbox = this.moveData.hitbox;
+        const shouldBeActive = currentFrame >= hitbox.activeFrame && currentFrame <= hitbox.endFrame;
 
-        if (!this.hitboxActive && currentFrame >= hitbox.activeFrame && currentFrame <= hitbox.endFrame) {
+        if (shouldBeActive && !this.hitboxActive) {
             this.activateHitbox();
-        } else if (this.hitboxActive) {
+        } else if (!shouldBeActive && this.hitboxActive) {
             this.deactivateHitbox();
         }
     }
@@ -53,7 +54,7 @@ export class AttackState extends CharacterState {
         const hitbox = this.moveData.hitbox;
         const scene = this.character.scene;
 
-        // Créer le mesh de la hitbox (visible en debug)
+        // Mesh box — identique à avant
         this.hitboxMesh = BABYLON.MeshBuilder.CreateBox(
             `hitbox_${this.character.name}_${this.name}`,
             {
@@ -64,14 +65,12 @@ export class AttackState extends CharacterState {
             scene
         );
 
-        // Matériau debug — rouge semi-transparent
         const debugMat = new BABYLON.StandardMaterial(`hitboxMat_${this.name}`, scene);
         debugMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
         debugMat.alpha = 0.4;
         this.hitboxMesh.material = debugMat;
-        this.hitboxMesh.isVisible = true; // passer à false en prod
+        this.hitboxMesh.isVisible = true;
 
-        // Tag pour identifier l'attaquant dans les collisions
         this.hitboxMesh.metadata = {
             type: 'hitbox',
             attacker: this.character,
@@ -80,35 +79,35 @@ export class AttackState extends CharacterState {
 
         this.updateHitboxPosition();
 
-        // Physics body KINEMATIC + trigger (détecte sans pousser)
-        this.hitboxBody = new BABYLON.PhysicsBody(
-            this.hitboxMesh,
-            BABYLON.PhysicsMotionType.KINEMATIC,
-            false,
-            scene
-        );
+        // À la place du PhysicsBody trigger : check intersectsMesh chaque frame
+        this.collisionObserver = scene.onBeforeRenderObservable.add(() => {
+            if (this.hasHit) return;
 
-        const shape = new BABYLON.PhysicsShapeBox(
-            new BABYLON.Vector3(0, 0, 0),
-            BABYLON.Quaternion.Identity(),
-            new BABYLON.Vector3(hitbox.size.x, hitbox.size.y, hitbox.size.z),
-            scene
-        );
-        shape.isTrigger = true;
-        this.hitboxBody.shape = shape;
-
-        // Écouter les collisions trigger
-        this.hitboxBody.setCollisionCallbackEnabled(true);
-        this.hitboxBody.getCollisionObservable().add((event) => {
-            this.onHitboxCollision(event);
+            for (const mesh of scene.meshes) {
+                if (!mesh.metadata || mesh.metadata.type !== 'hurtbox') continue;
+                if (mesh.metadata.character === this.character) continue;
+                if (this.hitboxMesh.intersectsMesh(mesh, false)) {
+                    this.onHitboxCollision(mesh.metadata.character);
+                    return;
+                }
+            }
         });
 
         this.hitboxActive = true;
     }
 
-    /**
-     * Positionne la hitbox devant le personnage selon son facing.
-     */
+    deactivateHitbox() {
+        if (this.collisionObserver) {
+            this.character.scene.onBeforeRenderObservable.remove(this.collisionObserver);
+            this.collisionObserver = null;
+        }
+        if (this.hitboxMesh) {
+            this.hitboxMesh.dispose();
+            this.hitboxMesh = null;
+        }
+        this.hitboxActive = false;
+    }
+    
     updateHitboxPosition() {
         if (!this.hitboxMesh) return;
 
@@ -123,60 +122,19 @@ export class AttackState extends CharacterState {
         );
     }
 
-    deactivateHitbox() {
-        if (this.hitboxBody) {
-            this.hitboxBody.dispose();
-            this.hitboxBody = null;
-        }
-        if (this.hitboxMesh) {
-            this.hitboxMesh.dispose();
-            this.hitboxMesh = null;
-        }
-        this.hitboxActive = false;
-    }
-
-    // ==========================================
-    // COLLISION — Détection du hit
-    // ==========================================
-
-    /**
-     * Appelé par Havok quand la hitbox trigger touche un autre body.
-     * Filtre les collisions pour ne garder que les hits valides.
-     */
-    onHitboxCollision(event) {
-        console.log("fdlksdklsjldkjlkqsdjlkjsqdljsqdsjql");
-        // Déjà touché pendant cette attaque
+    onHitboxCollision(defenderCharacter) {
         if (this.hasHit) return;
 
-        const otherBody = event.collidedAgainst;
-        const otherMesh = otherBody?.transformNode;
-
-        // Vérifier que c'est bien un character et pas nous-même
-        if (!otherMesh?.metadata) return;
-        if (otherMesh.metadata.type !== 'character') return;
-        if (otherMesh.metadata.character === this.character) return;
-
-        // HIT CONFIRMÉ — notifier vers le haut
         this.hasHit = true;
-        const hitData = {
+        this.character.onHit.notifyObservers({
             attacker: this.character,
-            defender: otherMesh.metadata.character,
+            defender: defenderCharacter,
             damage: this.moveData.damage,
             moveName: this.name
-        };
-        console.log(`[HIT] ${hitData.attacker.name} → ${hitData.defender.name} (${hitData.moveName}: ${hitData.damage} dmg)`);
-
-        // Notifie via l'Observable du Character
-        // Le CombatSystem pourra s'abonner à ça
-        this.character.onHit.notifyObservers(hitData);
+        });
     }
 
-    // ==========================================
-    // FIN D'ATTAQUE
-    // ==========================================
-
     onAttackEnd() {
-        this.deactivateHitbox();
         this.isBlocking = false;
     }
 }

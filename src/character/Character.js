@@ -12,6 +12,7 @@ export class Character {
 
         // Physics
         this.physicsBody = null;
+        this.hurtbox = null;
 
         // Animations
         this.currentAnimation = null;
@@ -71,30 +72,32 @@ export class Character {
 
         // Empêche le perso de dormir (sinon il freeze après un moment sans bouger)
         this.physicsBody.disablePreStep = false;
-
-        this.afficherCapsuleDebug();
+        
+        this.physicsBody.setCollisionCallbackEnabled(true);
+        this.initHurtbox();
     }
 
-    afficherCapsuleDebug() {
-        this.debugCapsule = BABYLON.MeshBuilder.CreateCapsule(
-            `debug_${this.name}`,
+    initHurtbox() {
+        this.hurtbox = BABYLON.MeshBuilder.CreateCapsule(
+            `hurtbox_${this.name}`,
             {
-                height: 1.5,       // distance entre point bas et haut + rayon*2
-                radius: 0.25,      // même rayon que la shape
+                height: 1.5,
+                radius: 0.25,
                 tessellation: 16
             },
             this.scene
         );
 
-        const debugMat = new BABYLON.StandardMaterial(`debugMat_${this.name}`, this.scene);
-        debugMat.diffuseColor = new BABYLON.Color3(0, 1, 0);
-        debugMat.alpha = 0.4;
-        this.debugCapsule.material = debugMat;
+        this.hurtbox.metadata = { type: 'hurtbox', character: this };
 
-        // Parent au mesh → suit automatiquement le perso
-        this.debugCapsule.parent = this.mesh;
-        // Ajuster le Y pour centrer sur la shape (milieu entre point bas 0.3 et point haut 1.5)
-        this.debugCapsule.position.y = 0.9;
+        const mat = new BABYLON.StandardMaterial(`hurtboxMat_${this.name}`, this.scene);
+        mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        mat.alpha = 0.4;
+        this.hurtbox.material = mat;
+
+        this.hurtbox.parent = this.mesh;
+        this.hurtbox.position.y = 0.9;
+        this.hurtbox.isPickable = false;
     }
 
     move(velocityZ) {
@@ -158,6 +161,7 @@ export class Character {
 
     dispose() {
         this.physicsBody?.dispose();
+        this.hurtbox?.dispose();
         this.mesh?.dispose();
         this.onHit.clear();
     }

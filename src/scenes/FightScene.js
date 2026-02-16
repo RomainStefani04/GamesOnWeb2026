@@ -5,6 +5,7 @@ import { Arena } from '../arena/Arena';
 import { FightCamera } from '../arena/FightCamera';
 import { Player } from '../character/Player';
 import { GridMaterial } from '@babylonjs/materials';
+import { CombatSystem } from '../combat/CombatSystem';
 
 
 export class FightScene {
@@ -20,6 +21,7 @@ export class FightScene {
         this.player1 = null;
         this.player2 = null;
         this.arena = null;
+        this.combatSystem = null;
 
         this.initScene();
     }
@@ -38,6 +40,7 @@ export class FightScene {
     setup() {
         this.initPlayer();
         this.arena = new Arena(this.scene, this.assetManager, this.city);
+        this.combatSystem = new CombatSystem(this.player1, this.player2);
         this.ajouterGridPourDev();
     }
 
