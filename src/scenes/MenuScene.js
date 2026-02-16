@@ -13,6 +13,7 @@ export class MenuScene {
         this.currentPanel = "main";
         this.particleSystem = null;
         this.selectedLevel = 1;
+        this.gameMode = null;
         
         this.init();
     }
@@ -139,7 +140,7 @@ export class MenuScene {
         this.mainContainer.addControl(buttonContainer);
 
         const playButton = this.createButton("JOUER", "#8b5cf6", () => {
-            this.showLevelSelect();
+            this.showModeSelect();
         });
         
         const creditsButton = this.createButton("CRÉDITS", "#6366f1", () => {
@@ -155,6 +156,153 @@ export class MenuScene {
         buttonContainer.addControl(quitButton);
 
         this.animateMenuEntry(buttonContainer);
+    }
+
+    showModeSelect() {
+        this.clearContainer();
+        this.currentPanel = "modeSelect";
+
+        // Titre
+        const modeTitle = new GUI.TextBlock("modeTitle");
+        modeTitle.text = "MODE DE JEU";
+        modeTitle.color = "#e8d5f2";
+        modeTitle.fontSize = 42;
+        modeTitle.fontFamily = "'Orbitron', sans-serif";
+        modeTitle.top = "-220px";
+        modeTitle.shadowColor = "#8b5cf6";
+        modeTitle.shadowBlur = 15;
+        this.mainContainer.addControl(modeTitle);
+
+        const modeSubtitle = new GUI.TextBlock("modeSubtitle");
+        modeSubtitle.text = "ゲームモード";
+        modeSubtitle.color = "#a78bfa";
+        modeSubtitle.fontSize = 24;
+        modeSubtitle.fontFamily = "'Noto Serif JP', serif";
+        modeSubtitle.top = "-170px";
+        this.mainContainer.addControl(modeSubtitle);
+
+        // Conteneur des cartes de mode
+        const modeContainer = new GUI.StackPanel("modeContainer");
+        modeContainer.isVertical = false;
+        modeContainer.spacing = 40;
+        modeContainer.top = "10px";
+        modeContainer.clipChildren = false;
+        modeContainer.clipContent = false;
+        this.mainContainer.addControl(modeContainer);
+
+        // Carte Joueur VS IA
+        const soloCard = this.createModeCard(
+            "solo",
+            "JOUEUR VS IA",
+            "対 AI",
+            "Affrontez une intelligence\nartificielle redoutable",
+            "🤖",
+            "#8b5cf6",
+            () => {
+                this.gameMode = "solo";
+                this.showLevelSelect();
+            }
+        );
+        modeContainer.addControl(soloCard);
+
+        // Carte Joueur VS Joueur
+        const pvpCard = this.createModeCard(
+            "pvp",
+            "JOUEUR VS JOUEUR",
+            "対 プレイヤー",
+            "Défiez un ami en\ncombat local",
+            "⚔️",
+            "#6366f1",
+            () => {
+                this.gameMode = "pvp";
+                this.showLevelSelect();
+            }
+        );
+        modeContainer.addControl(pvpCard);
+
+        // Bouton retour
+        const backButton = this.createButton("RETOUR", "#4c1d95", () => {
+            this.showMainMenu();
+        });
+        backButton.top = "220px";
+        this.mainContainer.addControl(backButton);
+
+        this.animateMenuEntry(modeContainer);
+    }
+
+    createModeCard(id, title, japaneseTitle, description, icon, baseColor, onClick) {
+        const card = new GUI.Rectangle(`modeCard_${id}`);
+        card.width = "260px";
+        card.height = "300px";
+        card.cornerRadius = 15;
+        card.thickness = 3;
+        card.color = baseColor;
+        card.background = `${baseColor}15`;
+
+        // Icône
+        const iconText = new GUI.TextBlock(`modeIcon_${id}`);
+        iconText.text = icon;
+        iconText.fontSize = 60;
+        iconText.top = "-90px";
+        card.addControl(iconText);
+
+        // Titre japonais
+        const jpTitle = new GUI.TextBlock(`modeJpTitle_${id}`);
+        jpTitle.text = japaneseTitle;
+        jpTitle.color = "#a78bfa";
+        jpTitle.fontSize = 18;
+        jpTitle.fontFamily = "'Noto Serif JP', serif";
+        jpTitle.top = "-30px";
+        card.addControl(jpTitle);
+
+        // Titre principal
+        const mainTitle = new GUI.TextBlock(`modeMainTitle_${id}`);
+        mainTitle.text = title;
+        mainTitle.color = "#e8d5f2";
+        mainTitle.fontSize = 18;
+        mainTitle.fontWeight = "bold";
+        mainTitle.fontFamily = "'Orbitron', sans-serif";
+        mainTitle.top = "10px";
+        card.addControl(mainTitle);
+
+        // Description
+        const desc = new GUI.TextBlock(`modeDesc_${id}`);
+        desc.text = description;
+        desc.color = "#9ca3af";
+        desc.fontSize = 13;
+        desc.top = "70px";
+        desc.textWrapping = true;
+        desc.lineSpacing = "4px";
+        card.addControl(desc);
+
+        // Hover effects
+        card.onPointerEnterObservable.add(() => {
+            card.background = `${baseColor}35`;
+            card.scaleX = 1.05;
+            card.scaleY = 1.05;
+            card.thickness = 4;
+            card.color = "#a78bfa";
+        });
+
+        card.onPointerOutObservable.add(() => {
+            card.background = `${baseColor}15`;
+            card.scaleX = 1;
+            card.scaleY = 1;
+            card.thickness = 3;
+            card.color = baseColor;
+        });
+
+        card.onPointerClickObservable.add(() => {
+            card.scaleX = 0.95;
+            card.scaleY = 0.95;
+            setTimeout(() => {
+                card.scaleX = 1.05;
+                card.scaleY = 1.05;
+                onClick();
+            }, 100);
+        });
+
+        return card;
     }
 
     showLevelSelect() {
@@ -468,7 +616,7 @@ export class MenuScene {
         
         // Utiliser le SceneManager pour changer de scène
         if (this.sceneManager) {
-            this.sceneManager.switchTo('FightScene', romajiName);
+            this.sceneManager.switchTo('CharactersSelectionScene', { city: romajiName, gameMode: this.gameMode });
         }
     }
 

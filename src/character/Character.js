@@ -28,16 +28,28 @@ export class Character {
     initMesh(mesh, animationGroups) {
         this.mesh = mesh;
         this.animationGroups = animationGroups || [];
-        animationGroups.forEach(group => {
-            const name = group.name.toLowerCase();
-            switch (name) {
-                case 'jab':
-                    group.from = 0;
-                    group.to = 60;
-                    break;
+        
+        this.animationGroups.forEach(group => {
+            const fullName = group.name.toLowerCase();
+            let targetKey = null;
+
+            // Identification de l'animation par mot-clé (indépendant du suffixe de clone)
+            if (fullName.includes('idle')) targetKey = 'idle';
+            else if (fullName.includes('walk_forward')) targetKey = 'walk_forward';
+            else if (fullName.includes('walk_backward')) targetKey = 'walk_backward';
+            else if (fullName.includes('jab')) {
+                targetKey = 'jab';
+                group.from = 0; // Vos réglages spécifiques
+                group.to = 60;
             }
-            this.mapAnimations[name] = group;
-            group.stop();
+            else if (fullName.includes('cross')) targetKey = 'cross';
+
+            if (targetKey) {
+                this.mapAnimations[targetKey] = group;
+                console.log(`[${this.name}] Animation mappée : ${targetKey} (original: ${group.name})`);
+            }
+            
+            group.stop(); // On s'assure qu'elles ne jouent pas toutes en même temps
         });
     }
 
