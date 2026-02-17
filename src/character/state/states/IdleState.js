@@ -8,7 +8,7 @@ export class IdleState extends CharacterState {
         this.blendingSpeed = 0.1;
     }
 
-    enter() {
+    enter(params = {}) {
         this.character.stop();
         this.character.playAnimation('idle', true, this.animationSpeed, this.blendingSpeed);
     }

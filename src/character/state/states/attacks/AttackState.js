@@ -10,10 +10,11 @@ export class AttackState extends CharacterState {
         this.blendingSpeed = 0.1;
 
         this.elapsedTime = 0;
-        this.hitboxActive = false;
         this.hitboxMesh = null;
-        this.hitboxBody = null;
+        this.boneNode = null;
         this.hasHit = false;
+        this.syncObserver = null;
+        this.damageObserver = null;
 
         this.moveData = null;
     }
@@ -21,47 +22,40 @@ export class AttackState extends CharacterState {
     enter() {
         this.isBlocking = true;
         this.elapsedTime = 0;
-        this.hitboxActive = false;
         this.hasHit = false;
 
         this.character.stop();
+        this.createHitbox();
 
-        let anim = this.character.playAnimation(this.animationName, false, this.animationSpeed, this.blendingSpeed);
+        let anim = this.character.playAnimation(
+            this.animationName, false, this.animationSpeed, this.blendingSpeed
+        );
         anim.onAnimationGroupEndObservable.addOnce(() => this.onAttackEnd());
     }
 
     exit() {
-        this.deactivateHitbox();
+        this.destroyHitbox();
     }
 
     update(deltaTime) {
         if (!this.moveData?.hitbox) return;
-
         this.elapsedTime += deltaTime;
-        // Convertir le temps écoulé en frame (base 60fps * vitesse d'anim)
-        const currentFrame = this.elapsedTime * this.animationSpeed * 60;
-        const hitbox = this.moveData.hitbox;
-        const shouldBeActive = currentFrame >= hitbox.activeFrame && currentFrame <= hitbox.endFrame;
-
-        if (shouldBeActive && !this.hitboxActive) {
-            this.activateHitbox();
-        } else if (!shouldBeActive && this.hitboxActive) {
-            this.deactivateHitbox();
-        }
     }
 
-    activateHitbox() {
-        const hitbox = this.moveData.hitbox;
+    createHitbox() {
         const scene = this.character.scene;
+        const hitbox = this.moveData.hitbox;
 
-        // Mesh box — identique à avant
-        this.hitboxMesh = BABYLON.MeshBuilder.CreateBox(
+        this.boneNode = this.character.getBoneNode(this.moveData.boneName);
+        if (!this.boneNode) {
+            console.warn(`Bone "${this.moveData.boneName}" non trouvé`);
+            return;
+        }
+
+        // Simple mesh sphère, pas de physics body
+        this.hitboxMesh = BABYLON.MeshBuilder.CreateSphere(
             `hitbox_${this.character.name}_${this.name}`,
-            {
-                width: hitbox.size.x,
-                height: hitbox.size.y,
-                depth: hitbox.size.z
-            },
+            { diameter: hitbox.radius * 2 },
             scene
         );
 
@@ -69,24 +63,28 @@ export class AttackState extends CharacterState {
         debugMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
         debugMat.alpha = 0.4;
         this.hitboxMesh.material = debugMat;
-        this.hitboxMesh.isVisible = false; // Debug Pour afficher/cacher la hitbox
+        this.hitboxMesh.isVisible = false; // false une fois calé
 
-        this.hitboxMesh.metadata = {
-            type: 'hitbox',
-            attacker: this.character,
-            moveData: this.moveData
-        };
+        this.hitboxMesh.isPickable = false;
+        this.hitboxMesh.parent = this.boneNode;
+        const boneScale = this.boneNode.getWorldMatrix().getRow(0).length();
+        if (boneScale > 0) {
+            const compensate = 1 / boneScale;
+            this.hitboxMesh.scaling.setAll(compensate);
+        }
+        
+        // Check dégâts uniquement pendant les frames actives
+        this.damageObserver = scene.onBeforeRenderObservable.add(() => {
+            if (this.hasHit || !this.moveData?.hitbox) return;
 
-        this.updateHitboxPosition();
-
-        // À la place du PhysicsBody trigger : check intersectsMesh chaque frame
-        this.collisionObserver = scene.onBeforeRenderObservable.add(() => {
-            if (this.hasHit) return;
+            const currentFrame = this.elapsedTime * this.animationSpeed * 60;
+            const isInActiveFrames = currentFrame >= this.moveData.hitbox.activeFrame
+                                  && currentFrame <= this.moveData.hitbox.endFrame;
+            if (!isInActiveFrames) return;
 
             for (const mesh of scene.meshes) {
                 if (!mesh.metadata || mesh.metadata.type !== 'hurtbox') continue;
                 if (mesh.metadata.character === this.character) continue;
-                // Force la mise a jour de la position pour bien verifier
                 this.hitboxMesh.computeWorldMatrix(true);
                 mesh.computeWorldMatrix(true);
                 if (this.hitboxMesh.intersectsMesh(mesh, false)) {
@@ -95,40 +93,41 @@ export class AttackState extends CharacterState {
                 }
             }
         });
-
-        this.hitboxActive = true;
     }
 
-    deactivateHitbox() {
-        if (this.collisionObserver) {
-            this.character.scene.onBeforeRenderObservable.remove(this.collisionObserver);
-            this.collisionObserver = null;
+    destroyHitbox() {
+        if (this.syncObserver) {
+            this.character.scene.onBeforeRenderObservable.remove(this.syncObserver);
+            this.syncObserver = null;
+        }
+        if (this.damageObserver) {
+            this.character.scene.onBeforeRenderObservable.remove(this.damageObserver);
+            this.damageObserver = null;
         }
         if (this.hitboxMesh) {
             this.hitboxMesh.dispose();
             this.hitboxMesh = null;
         }
-        this.hitboxActive = false;
-    }
-    
-    updateHitboxPosition() {
-        if (!this.hitboxMesh) return;
-
-        const charPos = this.character.mesh.position;
-        const hitbox = this.moveData.hitbox;
-        const facing = this.character.facingDirection;
-
-        this.hitboxMesh.position.set(
-            charPos.x + (hitbox.offset.x || 0),
-            charPos.y + hitbox.offset.y,
-            charPos.z + hitbox.offset.z * facing
-        );
+        this.boneNode = null;
     }
 
     onHitboxCollision(defenderCharacter) {
         if (this.hasHit) return;
-
         this.hasHit = true;
+
+        const knockback = this.moveData.knockback || 150;
+        const direction = this.character.facingDirection;
+
+        const sm = defenderCharacter.stateMachine;
+        sm.changeState(sm.states.stun, { duration: this.moveData.stunDuration });
+        
+        if (defenderCharacter.physicsBody) {
+            defenderCharacter.physicsBody.applyImpulse(
+                new BABYLON.Vector3(0, 0, direction * knockback),
+                defenderCharacter.mesh.position
+            );
+        }
+
         this.character.onHit.notifyObservers({
             attacker: this.character,
             defender: defenderCharacter,

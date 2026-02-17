@@ -8,7 +8,7 @@ export class WalkForwardState extends CharacterState {
         this.blendingSpeed = 0.1;
     }
 
-    enter() {
+    enter(params = {}) {
         this.character.playAnimation('walk_forward', true, this.animationSpeed, this.blendingSpeed);
     }
 

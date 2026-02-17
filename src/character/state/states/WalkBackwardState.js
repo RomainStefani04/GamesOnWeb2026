@@ -9,7 +9,7 @@ export class WalkBackwardState extends CharacterState {
         this.blendingSpeed = 0.1;
     }
 
-    enter() {
+    enter(params = {}) {
         this.character.playAnimation('walk_backward', true, this.animationSpeed, this.blendingSpeed);
     }
 
