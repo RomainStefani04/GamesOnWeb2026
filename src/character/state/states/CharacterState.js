@@ -7,7 +7,7 @@ export class CharacterState {
         this.isBlocking = false;
     }
 
-    enter() {}
+    enter(params = {}) {}
     exit() {}
     update(deltaTime) {}
 }

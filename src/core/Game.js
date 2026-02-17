@@ -16,8 +16,14 @@ export class Game {
         this.havokInstance = await HavokPhysics();
         this.sceneManager = new SceneManager(this.engine, this.assetManager, this.havokInstance);
 
-        //this.sceneManager.switchTo('FightScene', "kyoto"); // dev shortcut
-        this.sceneManager.switchTo('MenuScene');
+        this.sceneManager.switchTo('FightScene', {
+            city: "Tokyo",
+            characters: {
+                player1: "akaza",
+                player2: "akaza"
+            }
+        });
+        //this.sceneManager.switchTo('MenuScene');
         this.initialized = true;
     }
 

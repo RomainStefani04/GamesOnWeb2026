@@ -35,7 +35,6 @@ export class Character {
         this.animationGroups.forEach(group => {
             const fullName = group.name.toLowerCase();
             let targetKey = null;
-
             // Identification de l'animation par mot-clé (indépendant du suffixe de clone)
             if (fullName.includes('idle')) targetKey = 'idle';
             else if (fullName.includes('walk_forward')) targetKey = 'walk_forward';
@@ -46,14 +45,23 @@ export class Character {
                 group.to = 60;
             }
             else if (fullName.includes('cross')) targetKey = 'cross';
+            else if (fullName.includes('stun')) { 
+                targetKey = 'stun';
+                group.from = 20;
+            }
 
             if (targetKey) {
                 this.mapAnimations[targetKey] = group;
-                //console.log(`[${this.name}] Animation mappée : ${targetKey} (original: ${group.name})`);
             }
             
             group.stop(); // On s'assure qu'elles ne jouent pas toutes en même temps
         });
+    }
+
+    getBoneNode(boneName) {
+        if (!this.mesh) return null;
+        return this.mesh.getChildTransformNodes(false)
+            .find(n => n.name.includes(boneName)) || null;
     }
 
     initPhysics() {
@@ -109,7 +117,7 @@ export class Character {
         mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
         mat.alpha = 0.4;
         this.hurtbox.material = mat;
-        this.hurtbox.isVisible = false;
+        this.hurtbox.isVisible = false; // true pour debug
 
         this.hurtbox.parent = this.mesh;
         this.hurtbox.position.y = 0.9;

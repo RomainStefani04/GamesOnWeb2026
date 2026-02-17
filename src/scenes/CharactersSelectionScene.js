@@ -503,8 +503,6 @@ export class CharactersSelectionScene {
     confirmSelection() {
         if (!this.player1Selection || !this.player2Selection) return;
 
-        //console.log(`Combat: ${this.player1Selection} vs ${this.player2Selection} à ${this.city}`);
-
         this.sceneManager.switchTo('FightScene', {
             city: this.city,
             characters: {
