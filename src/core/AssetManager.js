@@ -94,9 +94,9 @@ export class AssetManager {
     }
 
     cloneCharacterByKey(key) {
-        console.log(`Cloner personnage pour ${key}`);
+        //console.log(`Cloner personnage pour ${key}`);
         const container = this.characterContainers[key];
-        console.log("Container trouvé:", container);
+        //console.log("Container trouvé:", container);
         if (!container) {
             throw new Error(`Character container not loaded for: ${key}`);
         }

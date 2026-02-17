@@ -196,7 +196,7 @@ export class MenuScene {
             "JOUEUR VS IA",
             "対 AI",
             "Affrontez une intelligence\nartificielle redoutable",
-            "🤖",
+            "",
             "#8b5cf6",
             () => {
                 this.gameMode = "solo";
@@ -211,7 +211,7 @@ export class MenuScene {
             "JOUEUR VS JOUEUR",
             "対 プレイヤー",
             "Défiez un ami en\ncombat local",
-            "⚔️",
+            "",
             "#6366f1",
             () => {
                 this.gameMode = "pvp";

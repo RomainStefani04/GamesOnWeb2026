@@ -51,7 +51,7 @@ export class SceneManager {
     }
     
     async loadFightScene(city, characters) {
-        console.log("Chargement de la scène de combat avec les personnages:", characters);
+        //console.log("Chargement de la scène de combat avec les personnages:", characters);
         const loadingScene = new LoadingScene(this.engine);
         this.currentScene = loadingScene;
 

@@ -21,6 +21,9 @@ export class Character {
         // Observable pour notifier les hits (remonte vers CombatSystem)
         this.onHit = new BABYLON.Observable();
 
+        this.maxHealth = 100;
+        this.currentHealth = this.maxHealth;
+
         this.initMesh(mesh, animationGroups);
         this.initPhysics();
     }
@@ -46,7 +49,7 @@ export class Character {
 
             if (targetKey) {
                 this.mapAnimations[targetKey] = group;
-                console.log(`[${this.name}] Animation mappée : ${targetKey} (original: ${group.name})`);
+                //console.log(`[${this.name}] Animation mappée : ${targetKey} (original: ${group.name})`);
             }
             
             group.stop(); // On s'assure qu'elles ne jouent pas toutes en même temps

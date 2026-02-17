@@ -5,7 +5,7 @@ import { Arena } from '../arena/Arena';
 import { FightCamera } from '../arena/FightCamera';
 import { Player } from '../character/Player';
 import { GridMaterial } from '@babylonjs/materials';
-import { CombatSystem } from '../combat/CombatSystem';
+import { MatchManager } from '../combat/MatchManager';
 
 
 export class FightScene {
@@ -41,12 +41,12 @@ export class FightScene {
     setup() {
         this.initPlayer();
         this.arena = new Arena(this.scene, this.assetManager, this.city);
-        this.combatSystem = new CombatSystem(this.player1, this.player2);
+        this.matchManager = new MatchManager(this.player1, this.player2);
         //this.ajouterDebugGrid();
     }
 
     ajouterDebugGrid() {
-        console.log("Pour debug donc a suppr");
+        //console.log("Pour debug donc a suppr");
         // const grid = BABYLON.MeshBuilder.CreateGround("debugGrid", { width: 20, height: 20, subdivisions: 20 }, this.scene);
         // const gridMat = new GridMaterial("gridMat", this.scene);
         // gridMat.majorUnitFrequency = 5;
@@ -76,9 +76,11 @@ export class FightScene {
 
     initPlayer() {
         const clonePlayer1 = this.assetManager.cloneCharacterByKey(this.characters.player1);
+        //console.log("Clone Player 1:", clonePlayer1);
         this.player1 = new Player(
             this.scene,
             "player1",
+            this.characters.player1,
             new InputMapper(this.inputManager, "player1"),
             clonePlayer1?.mesh,
             clonePlayer1?.animationGroups
@@ -89,6 +91,7 @@ export class FightScene {
         this.player2 = new Player(
             this.scene,
             "player2",
+            this.characters.player2,
             new InputMapper(this.inputManager, "player2"),
             clonePlayer2?.mesh,
             clonePlayer2?.animationGroups
@@ -111,6 +114,8 @@ export class FightScene {
         }
         this.player1?.update(this.deltaTime);
         this.player2?.update(this.deltaTime);
+
+        this.matchManager?.updateMatchTimer(this.deltaTime);
     }
 
     updateFacingDirections() {

@@ -3,8 +3,9 @@ import { CharacterStateMachine } from '../character/state/CharacterStateMachine'
 
 
 export class Player extends Character {
-    constructor(scene, name, inputMapper, mesh, animationGroups) {
+    constructor(scene, name, meshName, inputMapper, mesh, animationGroups) {
         super(scene, name, mesh, animationGroups);
+        this.meshName = meshName;
         // La state machine sera initialisée après le chargement du mesh (c'est claude qui le dit)
         this.stateMachine = null;
         this.stateMachine = new CharacterStateMachine(this, inputMapper);
