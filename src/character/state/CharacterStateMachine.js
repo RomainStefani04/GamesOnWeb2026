@@ -5,6 +5,8 @@ import { JabState } from './states/attacks/JabState';
 import { CrossState } from './states/attacks/CrossState';
 import { StunState } from './states/StunState';
 import { BlockState } from './states/BlockState';
+import { VictoryState } from './states/VictoryState';
+import { DefeatState } from './states/DefeatState';
 
 // en gros sert à gérer les changements d'états du perso
 export class CharacterStateMachine {
@@ -26,6 +28,8 @@ export class CharacterStateMachine {
             cross: new CrossState(this),
             stun: new StunState(this),
             block: new BlockState(this),
+            victory: new VictoryState(this),
+            defeat: new DefeatState(this),
         };
 
         this.mapStateMove = new Map();
