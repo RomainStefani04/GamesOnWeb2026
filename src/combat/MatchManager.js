@@ -26,7 +26,6 @@ export class MatchManager {
         if (this.timerAccumulator >= 1) { // Chaque seconde
             this.currentTime--;
             this.timerAccumulator = 0;
-            console.log("Time Left:", this.currentTime);
             this.uiManager.updateTimer(this.currentTime);
             
             if (this.currentTime === 0) {

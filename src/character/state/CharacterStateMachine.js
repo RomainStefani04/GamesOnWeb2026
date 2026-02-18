@@ -4,6 +4,7 @@ import { WalkBackwardState } from './states/WalkBackwardState';
 import { JabState } from './states/attacks/JabState';
 import { CrossState } from './states/attacks/CrossState';
 import { StunState } from './states/StunState';
+import { BlockState } from './states/BlockState';
 
 // en gros sert à gérer les changements d'états du perso
 export class CharacterStateMachine {
@@ -24,11 +25,13 @@ export class CharacterStateMachine {
             jab: new JabState(this),
             cross: new CrossState(this),
             stun: new StunState(this),
+            block: new BlockState(this),
         };
 
         this.mapStateMove = new Map();
         this.mapStateMove.set('moveRight', this.states.walkforward);
         this.mapStateMove.set('moveLeft', this.states.walkbackward);
+        this.mapStateMove.set('block', this.states.block);
         
         this.mapStateAttack = new Map();
         this.mapStateAttack.set('jab', this.states.jab);

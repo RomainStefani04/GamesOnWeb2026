@@ -4,11 +4,16 @@ export class StunState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "Stun";
-        this.isBlocking = false;
         this.duration = 0;
         this.elapsed = 0;
-        this.animationSpeed = 1.2;
-        this.blendingSpeed = 1;
+        this.animation = {
+            name: 'stun',
+            loop: false,
+            speed: 1.2,
+            blending: 1,
+            from: 20,       // skip le début de l'animation (wind-up)
+            to: null
+        };
     }
 
     enter(params = {}) {
@@ -16,7 +21,7 @@ export class StunState extends CharacterState {
         this.duration = params.duration || 0.3;
         this.elapsed = 0;
         this.character.stop();
-        this.character.playAnimation('stun', false, this.animationSpeed, this.blendingSpeed);
+        this.playStateAnimation();
     }
 
     exit() {

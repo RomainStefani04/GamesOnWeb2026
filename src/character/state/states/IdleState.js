@@ -4,16 +4,18 @@ export class IdleState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "Idle";
-        this.animationSpeed = 1.2;
-        this.blendingSpeed = 0.1;
+        this.animation = {
+            name: 'idle',
+            loop: true,
+            speed: 1.2,
+            blending: 0.1,
+            from: null,
+            to: null
+        };
     }
 
     enter(params = {}) {
         this.character.stop();
-        this.character.playAnimation('idle', true, this.animationSpeed, this.blendingSpeed);
+        this.playStateAnimation();
     }
-
-    exit() {}
-
-    update(deltaTime) {}
 }

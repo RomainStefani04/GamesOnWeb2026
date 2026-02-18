@@ -4,12 +4,18 @@ export class WalkForwardState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "WalkForward";
-        this.animationSpeed = 4;
-        this.blendingSpeed = 0.1;
+        this.animation = {
+            name: 'walk_forward',
+            loop: true,
+            speed: 4,
+            blending: 0.1,
+            from: null,
+            to: null
+        };
     }
 
     enter(params = {}) {
-        this.character.playAnimation('walk_forward', true, this.animationSpeed, this.blendingSpeed);
+        this.playStateAnimation();
     }
 
     exit() {
@@ -17,7 +23,6 @@ export class WalkForwardState extends CharacterState {
     }
 
     update(deltaTime) {
-        // Velocity directe, Havok gère le deltaTime
         const speed = this.character.facingDirection * this.character.speed;
         this.character.move(speed);
     }
