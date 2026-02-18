@@ -21,6 +21,11 @@ export class Character {
         // Observable pour notifier les hits (remonte vers CombatSystem)
         this.onHit = new BABYLON.Observable();
 
+        this.maxHealth = 100;
+        this.currentHealth = this.maxHealth;
+
+        this.isReadOnly = false; // Permet de bloquer les inputs
+
         this.initMesh(mesh, animationGroups);
         this.initPhysics();
     }
@@ -37,7 +42,7 @@ export class Character {
         const ANIMATION_KEYS = [
             'idle', 'walk_forward', 'walk_backward',
             'jab', 'cross', 'stun',
-            'jump', 'block'    // prêt pour les futurs états
+            'jump', 'block', 'victory', 'defeat'  
         ];
         
         this.animationGroups.forEach(group => {

@@ -1,4 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
+import { eventBus } from './../core/EventBus';
 
 export class CombatSystem {
     constructor(player1, player2) {
@@ -25,6 +26,8 @@ export class CombatSystem {
 
         defender.currentHealth = Math.max(0, defender.currentHealth - moveData.damage);
 
+        eventBus.emit('hit:landed', { strength: 'light' });
+
         // On notifie les abonnés
         this.onHealthChanged.notifyObservers({
             player: defender,
@@ -32,13 +35,7 @@ export class CombatSystem {
             percentage: (defender.currentHealth / defender.maxHealth)
         });
 
-        //console.log("---- Hit ----");
-        //console.log(`Attacker: ${attacker.name}`);
-        //console.log(`Defender: ${defender.name}`);
-        //console.log(`Move: ${moveName}`);
-        //console.log(`Damage: ${damage}`);
-        //console.log("-------------");
-    
+
     }
 
 }

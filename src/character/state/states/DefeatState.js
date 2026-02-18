@@ -8,7 +8,7 @@ export class DefeatState extends CharacterState {
             name: 'defeat',
             loop: false,
             speed: 1,
-            blending: 0.1,
+            blending: 0.8,
             from: null,
             to: null
         };
