@@ -19,6 +19,7 @@ export class InputMapper {
                 this.mapKeys = {
                     "moveRight" : 'KeyD',
                     "moveLeft" : 'KeyA',
+                    "block" : 'KeyS',
                     "jab" : 'KeyQ',
                     "cross" : 'KeyE'
                 };
@@ -27,6 +28,7 @@ export class InputMapper {
                 this.mapKeys = {
                     "moveRight" : 'ArrowRight',
                     "moveLeft" : 'ArrowLeft',
+                    "block" : 'ArrowDown',
                     "jab" : 'Numpad1',
                     "cross" : 'Numpad2'
                 };

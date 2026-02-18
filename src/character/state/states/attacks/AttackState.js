@@ -5,9 +5,6 @@ export class AttackState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "Attack";
-        this.animationName = 'attack';
-        this.animationSpeed = 1.0;
-        this.blendingSpeed = 0.1;
 
         this.elapsedTime = 0;
         this.hitboxMesh = null;
@@ -27,10 +24,10 @@ export class AttackState extends CharacterState {
         this.character.stop();
         this.createHitbox();
 
-        let anim = this.character.playAnimation(
-            this.animationName, false, this.animationSpeed, this.blendingSpeed
-        );
-        anim.onAnimationGroupEndObservable.addOnce(() => this.onAttackEnd());
+        const anim = this.playStateAnimation();
+        if (anim) {
+            anim.onAnimationGroupEndObservable.addOnce(() => this.onAttackEnd());
+        }
     }
 
     exit() {
@@ -52,7 +49,6 @@ export class AttackState extends CharacterState {
             return;
         }
 
-        // Simple mesh sphère, pas de physics body
         this.hitboxMesh = BABYLON.MeshBuilder.CreateSphere(
             `hitbox_${this.character.name}_${this.name}`,
             { diameter: hitbox.radius * 2 },
@@ -63,7 +59,7 @@ export class AttackState extends CharacterState {
         debugMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
         debugMat.alpha = 0.4;
         this.hitboxMesh.material = debugMat;
-        this.hitboxMesh.isVisible = false; // false une fois calé
+        this.hitboxMesh.isVisible = false;
 
         this.hitboxMesh.isPickable = false;
         this.hitboxMesh.parent = this.boneNode;
@@ -73,11 +69,10 @@ export class AttackState extends CharacterState {
             this.hitboxMesh.scaling.setAll(compensate);
         }
         
-        // Check dégâts uniquement pendant les frames actives
         this.damageObserver = scene.onBeforeRenderObservable.add(() => {
             if (this.hasHit || !this.moveData?.hitbox) return;
 
-            const currentFrame = this.elapsedTime * this.animationSpeed * 60;
+            const currentFrame = this.elapsedTime * this.animation.speed * 60;
             const isInActiveFrames = currentFrame >= this.moveData.hitbox.activeFrame
                                   && currentFrame <= this.moveData.hitbox.endFrame;
             if (!isInActiveFrames) return;
@@ -115,24 +110,10 @@ export class AttackState extends CharacterState {
         if (this.hasHit) return;
         this.hasHit = true;
 
-        const knockback = this.moveData.knockback || 150;
-        const direction = this.character.facingDirection;
-
-        const sm = defenderCharacter.stateMachine;
-        sm.changeState(sm.states.stun, { duration: this.moveData.stunDuration });
-        
-        if (defenderCharacter.physicsBody) {
-            defenderCharacter.physicsBody.applyImpulse(
-                new BABYLON.Vector3(0, 0, direction * knockback),
-                defenderCharacter.mesh.position
-            );
-        }
-
         this.character.onHit.notifyObservers({
             attacker: this.character,
             defender: defenderCharacter,
-            damage: this.moveData.damage,
-            moveName: this.name
+            moveData: this.moveData,
         });
     }
 

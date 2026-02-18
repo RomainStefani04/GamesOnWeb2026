@@ -30,33 +30,28 @@ export class Character {
         this.initPhysics();
     }
 
+    /**
+     * Mappe les AnimationGroups par mot-clé.
+     * Aucune config de frames ici — c'est la responsabilité des States.
+     */
     initMesh(mesh, animationGroups) {
         this.mesh = mesh;
         this.animationGroups = animationGroups || [];
+
+        // Mapping mot-clé → AnimationGroup
+        const ANIMATION_KEYS = [
+            'idle', 'walk_forward', 'walk_backward',
+            'jab', 'cross', 'stun',
+            'jump', 'block'    // prêt pour les futurs états
+        ];
         
         this.animationGroups.forEach(group => {
             const fullName = group.name.toLowerCase();
-            let targetKey = null;
-            // Identification de l'animation par mot-clé (indépendant du suffixe de clone)
-            if (fullName.includes('idle')) targetKey = 'idle';
-            else if (fullName.includes('walk_forward')) targetKey = 'walk_forward';
-            else if (fullName.includes('walk_backward')) targetKey = 'walk_backward';
-            else if (fullName.includes('jab')) {
-                targetKey = 'jab';
-                group.from = 0; // Vos réglages spécifiques
-                group.to = 60;
+            const matchedKey = ANIMATION_KEYS.find(key => fullName.includes(key));
+            if (matchedKey) {
+                this.mapAnimations[matchedKey] = group;
             }
-            else if (fullName.includes('cross')) targetKey = 'cross';
-            else if (fullName.includes('stun')) { 
-                targetKey = 'stun';
-                group.from = 20;
-            }
-
-            if (targetKey) {
-                this.mapAnimations[targetKey] = group;
-            }
-            
-            group.stop(); // On s'assure qu'elles ne jouent pas toutes en même temps
+            group.stop();
         });
     }
 
@@ -69,7 +64,6 @@ export class Character {
     initPhysics() {
         if (!this.mesh) return;
 
-        // Tag le mesh pour identifier le character lors des collisions
         this.mesh.metadata = { character: this, type: 'character' };
 
         this.physicsBody = new BABYLON.PhysicsBody(
@@ -79,25 +73,21 @@ export class Character {
             this.scene
         );
 
-        // Capsule qui englobe le perso (ajuster selon ton modèle)
         const shape = new BABYLON.PhysicsShapeCapsule(
-            new BABYLON.Vector3(0, 0.3, 0),   // point bas
-            new BABYLON.Vector3(0, 1.5, 0),   // point haut
-            0.25,                               // rayon
+            new BABYLON.Vector3(0, 0.3, 0),
+            new BABYLON.Vector3(0, 1.5, 0),
+            0.25,
             this.scene
         );
 
-        // Pas de rebond, friction pour pas glisser
         shape.material = { friction: 0.8, restitution: 0 };
         this.physicsBody.shape = shape;
         this.physicsBody.setMassProperties({
             mass: 70,
-            inertia: new BABYLON.Vector3(0, 0, 0) // bloque toutes les rotations
+            inertia: new BABYLON.Vector3(0, 0, 0)
         });
 
-        // Empêche le perso de dormir (sinon il freeze après un moment sans bouger)
         this.physicsBody.disablePreStep = false;
-        
         this.physicsBody.setCollisionCallbackEnabled(true);
         this.initHurtbox();
     }
@@ -105,11 +95,7 @@ export class Character {
     initHurtbox() {
         this.hurtbox = BABYLON.MeshBuilder.CreateCapsule(
             `hurtbox_${this.name}`,
-            {
-                height: 1.5,
-                radius: 0.25,
-                tessellation: 16
-            },
+            { height: 1.5, radius: 0.25, tessellation: 16 },
             this.scene
         );
 
@@ -119,7 +105,7 @@ export class Character {
         mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
         mat.alpha = 0.4;
         this.hurtbox.material = mat;
-        this.hurtbox.isVisible = false; // true pour debug
+        this.hurtbox.isVisible = false;
 
         this.hurtbox.parent = this.mesh;
         this.hurtbox.position.y = 0.9;
@@ -131,11 +117,7 @@ export class Character {
 
         const currentVel = this.physicsBody.getLinearVelocity();
         this.physicsBody.setLinearVelocity(
-            new BABYLON.Vector3(
-                0,              // bloque X (pas de mouvement latéral)
-                currentVel.y,   // garde Y (gravité, sauts)
-                velocityZ
-            )
+            new BABYLON.Vector3(0, currentVel.y, velocityZ)
         );
     }
 
@@ -148,11 +130,11 @@ export class Character {
         );
     }
 
-    playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0) {
+    playAnimation(animationName, loop = true, speedRatio = 1.0, blendingSpeed = 1.0, from = null, to = null) {
         const anim = this.mapAnimations[animationName.toLowerCase()];
         if (!anim) {
             console.warn(`Animation "${animationName}" non trouvée`);
-            return;
+            return null;
         }
 
         if (this.currentAnimation && this.currentAnimation !== anim) {
@@ -165,13 +147,15 @@ export class Character {
         }
 
         this.currentAnimation = anim;
-        anim.speedRatio = speedRatio;
-        anim.start(loop, speedRatio, anim.from, anim.to, false);
+        const speedRatioAnim = speedRatio ?? anim.speedRatio;
+        const startFrame = from ?? anim.from;
+        const endFrame = to ?? anim.to;
+        anim.start(loop, speedRatioAnim, startFrame, endFrame, false);
         return anim;
     }
 
     setFacingDirection(direction) {
-        if (this.stateMachine?.currentState?.isBlocking) return; // bloque le changement de facing pendant les attaques
+        if (this.stateMachine?.currentState?.isBlocking) return;
         if (this.facingDirection === direction) return;
         this.facingDirection = direction;
         if (this.mesh) {

@@ -1,13 +1,13 @@
 import { CharacterState } from './CharacterState';
 
-export class IdleState extends CharacterState {
+export class DefeatState extends CharacterState {
     constructor(stateMachine) {
         super(stateMachine);
-        this.name = "Idle";
+        this.name = "Defeat";
         this.animation = {
-            name: 'idle',
-            loop: true,
-            speed: 1.2,
+            name: 'defeat',
+            loop: false,
+            speed: 1,
             blending: 0.1,
             from: null,
             to: null

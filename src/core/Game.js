@@ -49,7 +49,7 @@ export class Game {
             this.sceneManager.render();
         });
 
-        window.addEventListener('resize', () => {
+        window.addEventListener('resize', (event) => {
             this.engine.resize();
         });
     }

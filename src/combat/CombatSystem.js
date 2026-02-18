@@ -8,23 +8,33 @@ export class CombatSystem {
 
         this.onHealthChanged = new BABYLON.Observable();
 
-        this.player1.onHit.add(({attacker, defender, damage, moveName}) => this.onHit(attacker, defender, damage, moveName));
-        this.player2.onHit.add(({attacker, defender, damage, moveName}) => this.onHit(attacker, defender, damage, moveName));
+        this.player1.onHit.add(({attacker, defender, moveData}) => this.onHit(attacker, defender, moveData));
+        this.player2.onHit.add(({attacker, defender, moveData}) => this.onHit(attacker, defender, moveData));
     }
 
-    onHit(attacker, defender, damage, moveName) {
+    onHit(attacker, defender, moveData) {
+        console.log(defender.stateMachine.currentState.name);
 
-        // Logique de réduction des PV
-        const victim = defender; 
-        victim.currentHealth = Math.max(0, victim.currentHealth - damage);
+        if (!(defender.stateMachine.currentState.name == "Block" && defender.stateMachine.currentState.active)) {
+            const sm = defender.stateMachine;
+            sm.changeState(sm.states.stun, { duration: moveData.stunDuration });
+        }
+        if (defender.physicsBody) {
+            defender.physicsBody.applyImpulse(
+                new BABYLON.Vector3(0, 0, attacker.facingDirection * moveData.knockback),
+                defender.mesh.position
+            );
+        }
+
+        defender.currentHealth = Math.max(0, defender.currentHealth - moveData.damage);
 
         eventBus.emit('hit:landed', { strength: 'light' });
 
         // On notifie les abonnés
         this.onHealthChanged.notifyObservers({
             player: defender,
-            newHp: victim.currentHealth,
-            percentage: (victim.currentHealth / victim.maxHealth)
+            newHp: defender.currentHealth,
+            percentage: (defender.currentHealth / defender.maxHealth)
         });
 
 
