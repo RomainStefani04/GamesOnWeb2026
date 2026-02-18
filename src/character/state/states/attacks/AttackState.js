@@ -10,8 +10,6 @@ export class AttackState extends CharacterState {
         this.hitboxMesh = null;
         this.boneNode = null;
         this.hasHit = false;
-        this.syncObserver = null;
-        this.damageObserver = null;
 
         this.moveData = null;
     }
@@ -37,6 +35,23 @@ export class AttackState extends CharacterState {
     update(deltaTime) {
         if (!this.moveData?.hitbox) return;
         this.elapsedTime += deltaTime;
+        if (this.hasHit) return;
+
+        const currentFrame = this.elapsedTime * this.animation.speed * 60;
+        const isInActiveFrames = currentFrame >= this.moveData.hitbox.activeFrame
+                            && currentFrame <= this.moveData.hitbox.endFrame;
+        if (!isInActiveFrames) return;
+
+        for (const mesh of this.character.scene.meshes) {
+            if (!mesh.metadata || mesh.metadata.type !== 'hurtbox') continue;
+            if (mesh.metadata.character === this.character) continue;
+            this.hitboxMesh.computeWorldMatrix(true);
+            mesh.computeWorldMatrix(true);
+            if (this.hitboxMesh.intersectsMesh(mesh, false)) {
+                this.onHitboxCollision(mesh.metadata.character);
+                return;
+            }
+        }
     }
 
     createHitbox() {
@@ -68,37 +83,9 @@ export class AttackState extends CharacterState {
             const compensate = 1 / boneScale;
             this.hitboxMesh.scaling.setAll(compensate);
         }
-        
-        this.damageObserver = scene.onBeforeRenderObservable.add(() => {
-            if (this.hasHit || !this.moveData?.hitbox) return;
-
-            const currentFrame = this.elapsedTime * this.animation.speed * 60;
-            const isInActiveFrames = currentFrame >= this.moveData.hitbox.activeFrame
-                                  && currentFrame <= this.moveData.hitbox.endFrame;
-            if (!isInActiveFrames) return;
-
-            for (const mesh of scene.meshes) {
-                if (!mesh.metadata || mesh.metadata.type !== 'hurtbox') continue;
-                if (mesh.metadata.character === this.character) continue;
-                this.hitboxMesh.computeWorldMatrix(true);
-                mesh.computeWorldMatrix(true);
-                if (this.hitboxMesh.intersectsMesh(mesh, false)) {
-                    this.onHitboxCollision(mesh.metadata.character);
-                    return;
-                }
-            }
-        });
     }
 
     destroyHitbox() {
-        if (this.syncObserver) {
-            this.character.scene.onBeforeRenderObservable.remove(this.syncObserver);
-            this.syncObserver = null;
-        }
-        if (this.damageObserver) {
-            this.character.scene.onBeforeRenderObservable.remove(this.damageObserver);
-            this.damageObserver = null;
-        }
         if (this.hitboxMesh) {
             this.hitboxMesh.dispose();
             this.hitboxMesh = null;

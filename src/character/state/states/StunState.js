@@ -5,7 +5,7 @@ export class StunState extends CharacterState {
         super(stateMachine);
         this.name = "Stun";
         this.duration = 0;
-        this.elapsed = 0;
+        this.elapsedTime = 0;
         this.animation = {
             name: 'stun',
             loop: false,
@@ -19,7 +19,7 @@ export class StunState extends CharacterState {
     enter(params = {}) {
         this.isBlocking = true;
         this.duration = params.duration || 0.3;
-        this.elapsed = 0;
+        this.elapsedTime = 0;
         this.character.stop();
         this.playStateAnimation();
     }
@@ -29,8 +29,8 @@ export class StunState extends CharacterState {
     }
 
     update(deltaTime) {
-        this.elapsed += deltaTime;
-        if (this.elapsed >= this.duration) {
+        this.elapsedTime += deltaTime;
+        if (this.elapsedTime >= this.duration) {
             this.isBlocking = false;
         }
     }

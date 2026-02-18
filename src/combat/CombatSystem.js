@@ -12,8 +12,6 @@ export class CombatSystem {
     }
 
     onHit(attacker, defender, moveData) {
-        console.log(defender.stateMachine.currentState.name);
-
         if (!(defender.stateMachine.currentState.name == "Block" && defender.stateMachine.currentState.active)) {
             const sm = defender.stateMachine;
             sm.changeState(sm.states.stun, { duration: moveData.stunDuration });
