@@ -70,8 +70,8 @@ export class MatchManager {
         if (winner && loser) {
             winner.isReadOnly = true;
             loser.isReadOnly = true;
-            winner.stateMachine.changeState(winner.stateMachine.states.walkforward,{loop: true}); 
-            loser.stateMachine.changeState(loser.stateMachine.states.walkforward,{loop: true});
+            winner.stateMachine.changeState(winner.stateMachine.states.victory); 
+            loser.stateMachine.changeState(loser.stateMachine.states.defeat);
         }
 
         const isWinnerLeft = (winner === this.player1);

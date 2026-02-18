@@ -21,11 +21,6 @@ export class Game {
         this.assetManager = new AssetManager();
         this.havokInstance = await HavokPhysics();
         
-        // ── Audio ──────────────────────────────────────────────────────────
-        // On crée une scène Babylon dédiée uniquement à l'audio.
-        // Pourquoi ? BabylonJS attache les Sound à une scène.
-        // Si tu attaches les sons à la scène de combat, ils sont détruits
-        // quand tu changes de scène. Une scène audio persistante règle ça.
         this._audioScene = new BABYLON.Scene(this.engine);
         this._audioScene.autoClear = false; // elle ne rend rien visuellement
         new BABYLON.Camera('audioCamera', BABYLON.Vector3.Zero(), this._audioScene);

@@ -6,10 +6,10 @@ export class VictoryState extends CharacterState {
         this.name = "Victory";
         this.animation = {
             name: 'victory',
-            loop: false,
+            loop: true,
             speed: 1,
             blending: 0.1,
-            from: null,
+            from: 40,
             to: null
         };
     }

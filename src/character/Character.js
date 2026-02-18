@@ -42,7 +42,7 @@ export class Character {
         const ANIMATION_KEYS = [
             'idle', 'walk_forward', 'walk_backward',
             'jab', 'cross', 'stun',
-            'jump', 'block'    // prêt pour les futurs états
+            'jump', 'block', 'victory', 'defeat'  
         ];
         
         this.animationGroups.forEach(group => {
