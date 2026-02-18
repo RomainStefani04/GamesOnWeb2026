@@ -24,6 +24,8 @@ export class Character {
         this.maxHealth = 100;
         this.currentHealth = this.maxHealth;
 
+        this.isReadOnly = false; // Permet de bloquer les inputs
+
         this.initMesh(mesh, animationGroups);
         this.initPhysics();
     }

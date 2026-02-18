@@ -4,14 +4,16 @@ import { LoadingScene } from "../scenes/LoadingScene";
 import { CharactersSelectionScene } from "../scenes/CharactersSelectionScene";
 
 export class SceneManager {
-    constructor(engine, assetManager, havokInstance) {
+    constructor(engine, assetManager, havokInstance, soundSystem) {
         this.engine = engine;
         this.assetManager = assetManager;
         this.havokInstance = havokInstance;
+        this.soundSystem = soundSystem;
         this.currentScene = null;
     }
 
     async switchTo(name, options = {}) {
+        this.soundSystem.preloadForScene(name); // Précharge les sons de la scène cible
         this.currentScene?.onDispose();
         this.currentScene = null;
 
