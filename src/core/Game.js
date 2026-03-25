@@ -1,11 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
-import '@babylonjs/core/Audio/audioEngine';
-import '@babylonjs/core/Audio/sound';
 import { SceneManager } from './SceneManager';
 import { AssetManager } from './AssetManager';
-import { eventBus } from './EventBus';  
-import { AudioMixer } from './../audio/AudioMixer.js';
-import { SoundSystem } from './../audio/SoundSystem.js';
 import HavokPhysics from '@babylonjs/havok';
 
 export class Game {
@@ -17,20 +12,30 @@ export class Game {
 
     async init() {
         this.engine = new BABYLON.Engine(this.canvas, true);
-        BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
         this.assetManager = new AssetManager();
         this.havokInstance = await HavokPhysics();
-        
-        this._audioScene = new BABYLON.Scene(this.engine);
-        this._audioScene.autoClear = false; // elle ne rend rien visuellement
-        new BABYLON.Camera('audioCamera', BABYLON.Vector3.Zero(), this._audioScene);
-        this.audioMixer  = new AudioMixer(this._audioScene);
-        this.soundSystem = new SoundSystem(this.audioMixer, eventBus);
-        this.sceneManager = new SceneManager(this.engine, this.assetManager, this.havokInstance, this.soundSystem);
-        // Abonne tous les listeners EventBus du SoundSystem
-        this.soundSystem.init();
+        this.sceneManager = new SceneManager(this.engine, this.assetManager, this.havokInstance);
 
+        // ==========================================
+        // CHOISIR LE MODE DE DÉMARRAGE :
+        // ==========================================
+
+        // Mode 1 : Menu principal (production)
         this.sceneManager.switchTo('MenuScene');
+
+        // Mode 2 : Combat direct vs IA (test)
+        // this.sceneManager.switchTo('FightScene', {
+        //     city: "Tokyo",
+        //     characters: { player1: "akaza", player2: "akaza" },
+        //     gameMode: "solo"
+        // });
+
+        // Mode 3 : Entraînement IA (self-play)
+        // this.sceneManager.switchTo('TrainingScene', {
+        //     city: "Tokyo",
+        //     character: "akaza"
+        // });
+
         this.initialized = true;
     }
 
@@ -40,7 +45,6 @@ export class Game {
         this.engine.runRenderLoop(() => {
             divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
             if (!this.initialized) return;
-            this._audioScene.render();
             this.sceneManager.render();
         });
 

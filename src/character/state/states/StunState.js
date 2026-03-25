@@ -11,7 +11,7 @@ export class StunState extends CharacterState {
             loop: false,
             speed: 1.2,
             blending: 1,
-            from: 20,       // skip le début de l'animation (wind-up)
+            from: 20,       // skip le début de l'animation
             to: null
         };
     }

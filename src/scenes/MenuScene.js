@@ -143,6 +143,10 @@ export class MenuScene {
             this.showModeSelect();
         });
         
+        const trainButton = this.createButton("ENTRAÎNER IA", "#22c55e", () => {
+            this.sceneManager.switchTo('TrainingScene', { city: "Tokyo", character: "akaza" });
+        });
+
         const creditsButton = this.createButton("CRÉDITS", "#6366f1", () => {
             this.showCredits();
         });
@@ -152,6 +156,7 @@ export class MenuScene {
         });
 
         buttonContainer.addControl(playButton);
+        buttonContainer.addControl(trainButton);
         buttonContainer.addControl(creditsButton);
         buttonContainer.addControl(quitButton);
 

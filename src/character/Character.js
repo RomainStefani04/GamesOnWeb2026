@@ -6,6 +6,10 @@ export class Character {
         this.name = name;
         this.speed = 2.5;
 
+        // [AI] Santé — initialisée ici pour que tous les systèmes puissent y accéder
+        this.maxHealth = 100;
+        this.currentHealth = 100;
+
         // État
         this.facingDirection = 1;
         this.isGrounded = true;
@@ -20,11 +24,6 @@ export class Character {
 
         // Observable pour notifier les hits (remonte vers CombatSystem)
         this.onHit = new BABYLON.Observable();
-
-        this.maxHealth = 100;
-        this.currentHealth = this.maxHealth;
-
-        this.isReadOnly = false; // Permet de bloquer les inputs
 
         this.initMesh(mesh, animationGroups);
         this.initPhysics();
@@ -42,7 +41,7 @@ export class Character {
         const ANIMATION_KEYS = [
             'idle', 'walk_forward', 'walk_backward',
             'jab', 'cross', 'stun',
-            'jump', 'block', 'victory', 'defeat'  
+            'jump', 'block'    // prêt pour les futurs états
         ];
         
         this.animationGroups.forEach(group => {
