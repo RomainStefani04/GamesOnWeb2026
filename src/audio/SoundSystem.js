@@ -28,6 +28,7 @@ export class SoundSystem {
       await Promise.all([
         // SFX de combat
         this._mixer.sfx.preload(lib.sfx.HIT_LIGHT.src,   lib.sfx.HIT_LIGHT.pool),
+        this._mixer.sfx.preload(lib.sfx.HIT_HEAVY.src,   lib.sfx.HIT_HEAVY.pool),
       ]);
     }
 

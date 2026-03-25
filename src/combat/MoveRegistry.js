@@ -6,6 +6,7 @@
  */
 export const MoveRegistry = {
     jab: {
+        name: "Jab",
         damage: 8,
         totalFrames: 60,
         boneName: "LeftHand",
@@ -19,6 +20,7 @@ export const MoveRegistry = {
     },
 
     cross: {
+        name: "Cross",
         damage: 14,
         totalFrames: 121,
         boneName: "RightHand",

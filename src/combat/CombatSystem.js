@@ -28,7 +28,16 @@ export class CombatSystem {
 
         defender.currentHealth = Math.max(0, defender.currentHealth - moveData.damage);
 
-        eventBus.emit('hit:landed', { strength: 'light' });
+        switch (moveData.name) {
+            case "Jab":
+                eventBus.emit('hit:landed', { strength: 'light' });
+                break;
+            case "Cross":
+                eventBus.emit('hit:landed', { strength: 'heavy' });
+                break;
+        }
+
+            
 
         // On notifie les abonnés
         this.onHealthChanged.notifyObservers({
