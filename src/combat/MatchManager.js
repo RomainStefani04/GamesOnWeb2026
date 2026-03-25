@@ -11,9 +11,15 @@ export class MatchManager {
 
         this.currentTime = 99;
         this.timerAccumulator = 0;
+        this.isMatchOver = false;
 
         this.combatSystem.onHealthChanged.add((data) => {
             this.uiManager.updateHealth(data.player, data.newHp);
+
+            // Si un joueur tombe à 0 HP
+            if (data.newHp <= 0 && !this.isMatchOver) {
+                this.handleKO(data.player);
+            }
         });
     }
 
@@ -34,8 +40,43 @@ export class MatchManager {
         }
     }
 
-    handleTimeOut() {
-        //console.log("FIN DU TEMPS !");
-        // Logique de victoire aux points ici
+    // Cas 1 : Quelqu'un n'a plus de vie
+    handleKO(loser) {
+        this.isMatchOver = true;
+        const winner = (loser === this.player1) ? this.player2 : this.player1;
+        this.endMatch(winner, loser, "K.O.");
     }
+
+    // Cas 2 : Le temps est fini
+    handleTimeOut() {
+        if (this.isMatchOver) return;
+        this.isMatchOver = true;
+
+        let winner, loser;
+        if (this.player1.currentHealth > this.player2.currentHealth) {
+            winner = this.player1; loser = this.player2;
+        } else if (this.player2.currentHealth > this.player1.currentHealth) {
+            winner = this.player2; loser = this.player1;
+        } else {
+            // Cas d'égalité (Draw)
+            return this.endMatch(null, null, "DRAW");
+        }
+
+        this.endMatch(winner, loser, "TIME UP");
+    }
+
+    endMatch(winner, loser, reason) {
+        //changer les états des joueurs pour les animations de victoire/défaite
+        if (winner && loser) {
+            winner.isReadOnly = true;
+            loser.isReadOnly = true;
+            winner.stateMachine.changeState(winner.stateMachine.states.victory); 
+            loser.stateMachine.changeState(loser.stateMachine.states.defeat);
+        }
+
+        const isWinnerLeft = (winner === this.player1);
+        this.uiManager.showEndScreen(winner, reason, isWinnerLeft);
+        
+    }
+
 }

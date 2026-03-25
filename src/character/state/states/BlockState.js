@@ -12,7 +12,6 @@ export class BlockState extends CharacterState {
             from: 0,
             to: 12
         };
-        this.activeObserver = null;
         this.active = false;
         this.frameToActivate = 10;
     }
@@ -22,24 +21,17 @@ export class BlockState extends CharacterState {
         this.elapsedTime = 0;
         this.playStateAnimation();
         this.active = false;
-        this.activeObserver = this.character.scene.onBeforeRenderObservable.add(() => {
-            const currentFrame = this.elapsedTime * this.animation.speed * 60;
-            if (currentFrame >= this.frameToActivate) {
-                this.active = true;
-            }
-        });
     }
 
     exit() {
-        if (this.activeObserver) {
-            this.character.scene.onBeforeRenderObservable.remove(this.activeObserver);
-            this.activeObserver = null;
-        }
         this.active = false;
     }
 
     update(deltaTime) {
-        console.log(this.active);
         this.elapsedTime += deltaTime;
+        const currentFrame = this.elapsedTime * this.animation.speed * 60;
+        if (currentFrame >= this.frameToActivate) {
+            this.active = true;
+        }
     }
 }

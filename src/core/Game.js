@@ -16,14 +16,26 @@ export class Game {
         this.havokInstance = await HavokPhysics();
         this.sceneManager = new SceneManager(this.engine, this.assetManager, this.havokInstance);
 
-        this.sceneManager.switchTo('FightScene', {
-            city: "Tokyo",
-            characters: {
-                player1: "akaza",
-                player2: "akaza"
-            }
-        });
-        //this.sceneManager.switchTo('MenuScene');
+        // ==========================================
+        // CHOISIR LE MODE DE DÉMARRAGE :
+        // ==========================================
+
+        // Mode 1 : Menu principal (production)
+        this.sceneManager.switchTo('MenuScene');
+
+        // Mode 2 : Combat direct vs IA (test)
+        // this.sceneManager.switchTo('FightScene', {
+        //     city: "Tokyo",
+        //     characters: { player1: "akaza", player2: "akaza" },
+        //     gameMode: "solo"
+        // });
+
+        // Mode 3 : Entraînement IA (self-play)
+        // this.sceneManager.switchTo('TrainingScene', {
+        //     city: "Tokyo",
+        //     character: "akaza"
+        // });
+
         this.initialized = true;
     }
 

@@ -6,6 +6,10 @@ export class Character {
         this.name = name;
         this.speed = 2.5;
 
+        // [AI] Santé — initialisée ici pour que tous les systèmes puissent y accéder
+        this.maxHealth = 100;
+        this.currentHealth = 100;
+
         // État
         this.facingDirection = 1;
         this.isGrounded = true;

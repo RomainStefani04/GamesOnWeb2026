@@ -1,6 +1,7 @@
 // UIManager.js
 import { HealthBar } from './HealthBar.js';
 import { Timer } from './Timer.js';
+import { EndScreen } from './EndScreen.js';
 import * as GUI from '@babylonjs/gui';
 
 export class UIManager {
@@ -14,6 +15,7 @@ export class UIManager {
         };
 
         this.timer = new Timer(this.advancedTexture, 99);
+        this.endScreen = new EndScreen(this.advancedTexture);
     }
 
     // Méthode pour mettre à jour le temps depuis le MatchManager
@@ -28,5 +30,9 @@ export class UIManager {
         } else {
             this.healthBars.p2.update(newValue);
         }
+    }
+
+    showEndScreen(winner, reason, isLeft) {
+        this.endScreen.show(winner, reason, isLeft);
     }
 }

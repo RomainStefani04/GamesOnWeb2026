@@ -54,7 +54,7 @@ export class CharacterStateMachine {
     //update de l état courant
     update(deltaTime) {
         this.updateFacingInput();
-        if (!this.currentState.isBlocking) {
+        if (!this.character.isReadOnly && !this.currentState.isBlocking) {
             this.handleInput();
         }
         this.currentState.update(deltaTime);
