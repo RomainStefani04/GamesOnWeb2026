@@ -2,6 +2,7 @@ import { MenuScene } from "../scenes/MenuScene";
 import { FightScene } from "../scenes/FightScene";
 import { LoadingScene } from "../scenes/LoadingScene";
 import { CharactersSelectionScene } from "../scenes/CharactersSelectionScene";
+import { eventBus } from "./EventBus";
 
 export class SceneManager {
     constructor(engine, assetManager, havokInstance, soundSystem) {
@@ -20,10 +21,12 @@ export class SceneManager {
         switch (name) {
             case 'MenuScene':
                 this.currentScene = new MenuScene(this.engine, this);
+                eventBus.emit('scene:menu:enter');
                 break;
 
             case 'CharactersSelectionScene':
                 await this.loadCharactersSelection(options.city, options.gameMode);
+                eventBus.emit('scene:characters:selection');
                 break;
 
             case 'FightScene':
@@ -34,6 +37,7 @@ export class SceneManager {
 
     async loadCharactersSelection(city, gameMode) {
         const loadingScene = new LoadingScene(this.engine);
+        eventBus.emit('scene:loading');
         this.currentScene = loadingScene;
 
         const charSelection = new CharactersSelectionScene(
@@ -54,6 +58,7 @@ export class SceneManager {
     
     async loadFightScene(city, characters) {
         const loadingScene = new LoadingScene(this.engine);
+        eventBus.emit('scene:loading');
         this.currentScene = loadingScene;
 
         const fightScene = new FightScene(
@@ -73,9 +78,10 @@ export class SceneManager {
         await new Promise(resolve => setTimeout(resolve, 400));
         loadingScene.onDispose();
         this.currentScene = fightScene;
+        eventBus.emit('scene:fight:enter', city);
     }
 
     render() {
-        this.currentScene?.render();
+        this.currentScene?.render();    
     }
 }

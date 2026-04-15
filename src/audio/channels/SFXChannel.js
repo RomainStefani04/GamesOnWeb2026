@@ -1,4 +1,3 @@
-import { Sound } from '@babylonjs/core';
 import { AUDIO_FORMATS } from './../SoundLibrabry';
 import * as BABYLON from '@babylonjs/core';
 
@@ -26,7 +25,7 @@ export class SFXChannel {
         Array.from({ length: poolSize }, () => this._loadSound(src))
     );
     
-    console.log('🎵 Pool créé:', src, instances); // 👈
+    //console.log('🎵 Pool créé:', src, instances); // 👈
     this._pools.set(src, instances);
     }
 
@@ -107,7 +106,7 @@ export class SFXChannel {
                     }
                 };
 
-                console.log('✅ Son prêt:', url);
+                //console.log('✅ Son prêt:', url);
                 resolve(sound);
             })
             .catch(reject);

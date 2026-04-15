@@ -7,6 +7,7 @@ import { eventBus } from './EventBus';
 import { AudioMixer } from './../audio/AudioMixer.js';
 import { SoundSystem } from './../audio/SoundSystem.js';
 import HavokPhysics from '@babylonjs/havok';
+import { Player } from '../character/Player.js';
 
 export class Game {
     constructor(canvas) {
@@ -30,7 +31,16 @@ export class Game {
         // Abonne tous les listeners EventBus du SoundSystem
         this.soundSystem.init();
 
-        this.sceneManager.switchTo('MenuScene');
+        //this.sceneManager.switchTo('MenuScene');
+
+        this.sceneManager.switchTo('FightScene', {
+            city: "tokyo",
+            characters: {
+                player1: 'akaza',
+                player2: 'akaza'
+            }
+        });
+
         this.initialized = true;
     }
 

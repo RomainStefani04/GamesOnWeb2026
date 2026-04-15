@@ -41,8 +41,8 @@ export class Character {
         // Mapping mot-clé → AnimationGroup
         const ANIMATION_KEYS = [
             'idle', 'walk_forward', 'walk_backward',
-            'jab', 'cross', 'stun',
-            'jump', 'block', 'victory', 'defeat'  
+            'jab', 'cross', 'light_kick', 'heavy_kick', 'leg_sweep', 'fireball', 'stun',
+            'jump', 'block', 'victory', 'defeat' , 'sweep_fall', 'frontflip', 'backflip'
         ];
         
         this.animationGroups.forEach(group => {

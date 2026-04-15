@@ -21,7 +21,12 @@ export class InputMapper {
                     "moveLeft" : 'KeyA',
                     "block" : 'KeyS',
                     "jab" : 'KeyQ',
-                    "cross" : 'KeyE'
+                    "cross" : 'KeyE',
+                    "light_kick" : 'KeyF',
+                    "heavy_kick" : 'KeyG',
+                    "leg_sweep" : 'KeyH',
+                    "fireball" : 'KeyR',
+                    "jump" : 'KeyW'
                 };
                 break;
             case "player2":
@@ -30,7 +35,12 @@ export class InputMapper {
                     "moveLeft" : 'ArrowLeft',
                     "block" : 'ArrowDown',
                     "jab" : 'Numpad1',
-                    "cross" : 'Numpad2'
+                    "cross" : 'Numpad2',
+                    "light_kick" : 'Numpad3',
+                    "heavy_kick" : 'Numpad4',
+                    "leg_sweep" : 'Numpad5',
+                    "fireball" : 'Numpad6',
+                    "jump" : 'ArrowUp'
                 };
                 break;
         }

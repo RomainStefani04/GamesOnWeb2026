@@ -26,17 +26,30 @@ export class SoundSystem {
 
     if (sceneName === 'FightScene') {
       await Promise.all([
-        // SFX de combat
         this._mixer.sfx.preload(lib.sfx.HIT_LIGHT.src,   lib.sfx.HIT_LIGHT.pool),
         this._mixer.sfx.preload(lib.sfx.HIT_HEAVY.src,   lib.sfx.HIT_HEAVY.pool),
+        this._mixer.sfx.preload(lib.sfx.FIREBALL.src, lib.sfx.FIREBALL.pool),
+        this._mixer.music.preload(lib.music.TOKYO_STAGE.src, 1),
+      ]);
+    }
+
+    if (sceneName === 'CharactersSelectionScene') {
+      await Promise.all([
+        this._mixer.music.preload(lib.music.CHARACTER_SELECTION.src, 1),
+        this._mixer.sfx.preload(lib.sfx.UI_SELECT.src, lib.sfx.UI_SELECT.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_CONFIRM.src, lib.sfx.UI_CONFIRM.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_BACK.src, lib.sfx.UI_BACK.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_HOOVER.src, lib.sfx.UI_HOOVER.pool),
       ]);
     }
 
     if (sceneName === 'MenuScene') {
       await Promise.all([
-        this._mixer.sfx.preload(lib.sfx.UI_SELECT.src,  lib.sfx.UI_SELECT.pool),
+        this._mixer.music.preload(lib.music.MAIN_MENU.src, 1),
+        this._mixer.sfx.preload(lib.sfx.UI_SELECT.src, lib.sfx.UI_SELECT.pool),
         this._mixer.sfx.preload(lib.sfx.UI_CONFIRM.src, lib.sfx.UI_CONFIRM.pool),
-        this._mixer.sfx.preload(lib.sfx.UI_BACK.src,    lib.sfx.UI_BACK.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_BACK.src, lib.sfx.UI_BACK.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_HOOVER.src, lib.sfx.UI_HOOVER.pool),
       ]);
     }
   }
@@ -62,17 +75,15 @@ export class SoundSystem {
     );
 
     this._unsubs.push(
-      this._eventBus.on('player:jump',    () => sfx.play(lib.sfx.JUMP.src))
+      this._eventBus.on('attack:fireball', () => {
+        sfx.play(lib.sfx.FIREBALL.src);
+      })
     );
 
     this._unsubs.push(
-      this._eventBus.on('player:land',    () => sfx.play(lib.sfx.LAND.src))
-    );
-
-    this._unsubs.push(
-      this._eventBus.on('special:hadouken', ({ character }) => {
+      this._eventBus.on('voice:entry', ({ character }) => {
         sfx.play(lib.sfx.HADOUKEN.src);
-        voice.play(lib.voice[`${character.toUpperCase()}_HADOUKEN`]?.src, { priority: 8 });
+        voice.play(lib.voice[`${character.toUpperCase()}_ENTRY`]?.src, { priority: 8 });
       })
     );
 
@@ -94,18 +105,31 @@ export class SoundSystem {
     this._unsubs.push(
       this._eventBus.on('ui:back',    () => sfx.play(lib.sfx.UI_BACK.src))
     );
+    this._unsubs.push(
+      this._eventBus.on('ui:hoover',    () => sfx.play(lib.sfx.UI_HOOVER.src))
+    );
 
     // ── Scènes ──────────────────────────────────────────────────────────────
     this._unsubs.push(
-      this._eventBus.on('scene:fight:start', ({ stageId }) => {
-        const key = `STAGE_${stageId.toUpperCase()}`;
-        music.crossfadeTo(lib.music[key]?.src ?? lib.music.STAGE_RYU.src, 1200);
+      this._eventBus.on('scene:fight:enter', (city) => {
+        const key = `${city.toUpperCase()}_STAGE`;
+        music.crossfadeTo(lib.music[key]?.src, 1200);
       })
     );
 
     this._unsubs.push(
       this._eventBus.on('scene:menu:enter', () => {
         music.crossfadeTo(lib.music.MAIN_MENU.src, 1000);
+      })
+    );
+    this._unsubs.push(
+      this._eventBus.on('scene:characters:selection', () => {
+        music.crossfadeTo(lib.music.CHARACTER_SELECTION.src, 1000);
+      })
+    );
+    this._unsubs.push(
+      this._eventBus.on('scene:loading', () => {
+        music.stop();
       })
     );
   }

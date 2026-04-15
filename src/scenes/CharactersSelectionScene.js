@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import * as GUI from '@babylonjs/gui';
+import { eventBus } from '../core/EventBus';
 
 export class CharactersSelectionScene {
     constructor(engine, sceneManager, assetManager, city, gameMode) {
@@ -134,6 +135,7 @@ export class CharactersSelectionScene {
 
         // ---- BOUTON CONFIRMER ----
         this.confirmButton = this.createStyledButton("CONFIRMER", "#8b5cf6", () => {
+            eventBus.emit('ui:confirm');
             this.confirmSelection();
         });
         this.confirmButton.top = "42%";
@@ -142,6 +144,7 @@ export class CharactersSelectionScene {
 
         // ---- BOUTON RETOUR ----
         const backButton = this.createStyledButton("RETOUR", "#4c1d95", () => {
+            eventBus.emit('ui:back');
             this.sceneManager.switchTo('MenuScene');
         });
         backButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -315,6 +318,7 @@ export class CharactersSelectionScene {
 
         // Hover
         card.onPointerEnterObservable.add(() => {
+            eventBus.emit('ui:hoover');
             card.background = "rgba(139, 92, 246, 0.25)";
             card.scaleX = 1.08;
             card.scaleY = 1.08;
@@ -328,6 +332,7 @@ export class CharactersSelectionScene {
 
         // Click
         card.onPointerClickObservable.add(() => {
+            eventBus.emit('ui:select');
             this.selectCharacter(charData.key);
         });
 
@@ -393,6 +398,8 @@ export class CharactersSelectionScene {
         }
 
         this.player1Selection = charKey;
+
+        //eventBus.emit('voice:entry', { character: charKey });
 
         // Mettre à jour la carte
         const card = this.characterCards[charKey];

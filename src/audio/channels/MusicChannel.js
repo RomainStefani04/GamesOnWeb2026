@@ -1,5 +1,5 @@
-import { Sound } from '@babylonjs/core';
 import { AUDIO_FORMATS } from './../SoundLibrabry';
+import * as BABYLON from '@babylonjs/core';
 
 /**
  * MusicChannel — Une seule piste musicale à la fois.
@@ -11,6 +11,19 @@ export class MusicChannel {
     this._volume  = 1.0;
     this._current = null; // Sound actuellement en cours
     this._muted   = false;
+    this._pools  = new Map();
+  }
+
+  async preload(srcs) {
+    const list = Array.isArray(srcs) ? srcs : [srcs];
+
+    await Promise.all(
+      list.map(async (src) => {
+        if (this._pools.has(src)) return;
+        const sound = await this._loadSound(src, { loop: true, volume: 0 });
+        this._pools.set(src, sound);
+      })
+    );
   }
 
   /**
@@ -62,12 +75,12 @@ export class MusicChannel {
 
   stop(fadeOut = 0) {
     if (!this._current) return;
-
+    const soundToStop = this._current; // capture locale
+    this._current = null;
     if (fadeOut > 0) {
-      this._fadeTo(this._current, 0, fadeOut, () => this._current?.stop());
+      this._fadeTo(soundToStop, 0, fadeOut, () => soundToStop.stop());
     } else {
-      this._current.stop();
-      this._current = null;
+      soundToStop.stop();
     }
   }
 
@@ -85,15 +98,58 @@ export class MusicChannel {
 
   // ─── Privé ───────────────────────────────────────────────────────────────
 
-  _loadSound(src, options) {
-    return new Promise((resolve) => {
-      const url  = `${src}.${AUDIO_FORMATS[0]}`; // fallback ogg à gérer si besoin
-      const sound = new Sound('music', url, this._scene, () => resolve(sound), {
-        loop:     options.loop ?? true,
-        volume:   options.volume ?? 1,
-        autoplay: false,
-      });
-    });
+  async _loadSound(src, options) {
+
+    if (this._pools.has(src)) {
+        const sound = this._pools.get(src);
+        sound.setVolume(options.volume ?? 1);
+        return sound;
+      }
+
+    const url = `${src}.${AUDIO_FORMATS[0]}`;
+    const ctx = BABYLON.Engine.audioEngine?.audioContext;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`[MusicChannel] Fichier introuvable : ${url}`);
+
+    const buffer      = await res.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(buffer);
+
+    // Même pattern que SFXChannel : objet qui imite l'interface
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = options.volume ?? 1;
+    gainNode.connect(ctx.destination);
+
+    let sourceNode = null;
+
+    const sound = {
+      _buffer:   audioBuffer,
+      _ctx:      ctx,
+      _gainNode: gainNode,
+      _loop:     options.loop ?? true,
+      isPlaying: false,
+
+      play() {
+        sourceNode = ctx.createBufferSource();
+        sourceNode.buffer    = this._buffer;
+        sourceNode.loop      = this._loop;
+        sourceNode.connect(this._gainNode);
+        sourceNode.start(0);
+        this.isPlaying = true;
+        sourceNode.onended = () => { this.isPlaying = false; };
+      },
+
+      stop() {
+        sourceNode?.stop();
+        sourceNode = null;
+        this.isPlaying = false;
+      },
+
+      getVolume()      { return this._gainNode.gain.value; },
+      setVolume(value) { this._gainNode.gain.value = Math.max(0, Math.min(1, value)); },
+    };
+
+    return sound;
   }
 
   _fadeTo(sound, targetVolume, duration, onComplete = null) {

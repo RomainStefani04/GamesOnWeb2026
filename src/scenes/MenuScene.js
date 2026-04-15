@@ -2,6 +2,7 @@ import * as BABYLON from '@babylonjs/core';
 import * as GUI from '@babylonjs/gui';
 import { InputManager } from '../core/InputManager';
 import { InputMapper } from '../core/InputMapper';
+import { eventBus } from '../core/EventBus';
 
 export class MenuScene {
     constructor(engine, sceneManager) {
@@ -140,14 +141,17 @@ export class MenuScene {
         this.mainContainer.addControl(buttonContainer);
 
         const playButton = this.createButton("JOUER", "#8b5cf6", () => {
+            eventBus.emit('ui:select');
             this.showModeSelect();
         });
         
         const creditsButton = this.createButton("CRÉDITS", "#6366f1", () => {
+            eventBus.emit('ui:select');
             this.showCredits();
         });
         
         const quitButton = this.createButton("QUITTER", "#4c1d95", () => {
+            eventBus.emit('ui:select');
             window.close();
         });
 
@@ -200,6 +204,7 @@ export class MenuScene {
             "#8b5cf6",
             () => {
                 this.gameMode = "solo";
+                eventBus.emit('ui:select');
                 this.showLevelSelect();
             }
         );
@@ -215,6 +220,7 @@ export class MenuScene {
             "#6366f1",
             () => {
                 this.gameMode = "pvp";
+                eventBus.emit('ui:select');
                 this.showLevelSelect();
             }
         );
@@ -222,6 +228,7 @@ export class MenuScene {
 
         // Bouton retour
         const backButton = this.createButton("RETOUR", "#4c1d95", () => {
+            eventBus.emit('ui:back');
             this.showMainMenu();
         });
         backButton.top = "220px";
@@ -277,6 +284,7 @@ export class MenuScene {
 
         // Hover effects
         card.onPointerEnterObservable.add(() => {
+            eventBus.emit('ui:hoover');
             card.background = `${baseColor}35`;
             card.scaleX = 1.05;
             card.scaleY = 1.05;
@@ -359,6 +367,7 @@ export class MenuScene {
 
         // Bouton retour
         const backButton = this.createButton("RETOUR", "#4c1d95", () => {
+            eventBus.emit('ui:back');
             this.showMainMenu();
         });
         backButton.top = "220px";
@@ -401,6 +410,7 @@ export class MenuScene {
 
         // Hover effects
         container.onPointerEnterObservable.add(() => {
+            eventBus.emit('ui:hoover');
             container.background = "rgba(139, 92, 246, 0.3)";
             container.scaleX = 1.05;
             container.scaleY = 1.05;
@@ -417,6 +427,7 @@ export class MenuScene {
         });
 
         container.onPointerClickObservable.add(() => {
+            eventBus.emit('ui:confirm');
             this.startLevel(number,romajiName);
         });
 
@@ -466,6 +477,7 @@ export class MenuScene {
         });
 
         const backButton = this.createButton("RETOUR", "#4c1d95", () => {
+            eventBus.emit('ui:back');
             this.showMainMenu();
         });
         backButton.top = "260px";
@@ -514,6 +526,7 @@ export class MenuScene {
         button.addControl(buttonText);
 
         button.onPointerEnterObservable.add(() => {
+            eventBus.emit('ui:hoover');
             button.background = `${baseColor}50`;
             button.thickness = 3;
             button.scaleX = 1.05;
