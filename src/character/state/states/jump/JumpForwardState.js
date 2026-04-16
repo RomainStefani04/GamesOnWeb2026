@@ -8,6 +8,7 @@ export class JumpForwardState extends JumpState {
         this.animation = {
             ...this.animation,
             name: 'frontflip',
+            speed: 0.7,
             from: 20,
             to: 70
         };

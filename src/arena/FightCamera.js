@@ -10,7 +10,7 @@ export class FightCamera {
     init() {
         this.camera = new BABYLON.ArcRotateCamera("camera1", 0, 0, 0, new BABYLON.Vector3(0, 1.3, 0), this.scene);
 
-        this.camera.setPosition(new BABYLON.Vector3(4, 1.4, 0));
+        this.camera.setPosition(new BABYLON.Vector3(5, 1.4, 0));
 
         this.camera.inputs.clear();
         this.camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
