@@ -39,7 +39,7 @@ export class BlockState extends CharacterState {
     }
 
     update(deltaTime) {
-        console.log(this.active);
+        // console.log(this.active);
         this.elapsedTime += deltaTime;
     }
 }

@@ -17,7 +17,6 @@ export class VoiceChannel {
         const instance = await this._loadSound(src);
         this._pools.set(src, [instance]);
 
-        //console.log('🎵 Voice prête:', src, [instance]);
     }
 
     // ✅ Copié depuis SFXChannel (partagé via _getAudioContext)
