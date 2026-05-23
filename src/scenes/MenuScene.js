@@ -17,6 +17,8 @@ export class MenuScene {
         this.selectedLevel   = 1;
         this.gameMode        = null;
         this.settingsUI      = null;   // ← instance partagée
+        this.availableModes  = { solo: false, pvp: true };
+        this.availableLevels = { 1: false, 2: false, 3: true, 4: false, 5: false };
 
         this.init();
     }
@@ -195,12 +197,12 @@ export class MenuScene {
         const soloCard = this.createModeCard(
             "solo", "JOUEUR VS IA", "対 AI",
             "Affrontez une intelligence\nartificielle redoutable", "",
-            "#8b5cf6", () => { this.gameMode = "solo"; eventBus.emit('ui:select'); this.showLevelSelect(); }
+            "#8b5cf6", this.isModeAvailable("solo"), () => { this.gameMode = "solo"; eventBus.emit('ui:select'); this.showLevelSelect(); }
         );
         const pvpCard = this.createModeCard(
             "pvp", "JOUEUR VS JOUEUR", "対 プレイヤー",
             "Défiez un ami en\ncombat local", "",
-            "#6366f1", () => { this.gameMode = "pvp"; eventBus.emit('ui:select'); this.showLevelSelect(); }
+            "#6366f1", this.isModeAvailable("pvp"), () => { this.gameMode = "pvp"; eventBus.emit('ui:select'); this.showLevelSelect(); }
         );
         modeContainer.addControl(soloCard);
         modeContainer.addControl(pvpCard);
@@ -258,7 +260,7 @@ export class MenuScene {
         levels.forEach((level, index) => {
             const row    = Math.floor(index / 3);
             const col    = index % 3;
-            const btn    = this.createLevelButton(level.num, level.name, level.sub);
+            const btn    = this.createLevelButton(level.num, level.name, level.sub, this.isLevelAvailable(level.num));
             levelGrid.addControl(btn, row, col);
         });
 
@@ -357,7 +359,7 @@ export class MenuScene {
         return button;
     }
 
-    createModeCard(id, title, japaneseTitle, description, icon, baseColor, onClick) {
+    createModeCard(id, title, japaneseTitle, description, icon, baseColor, available, onClick) {
         const card          = new GUI.Rectangle(`modeCard_${id}`);
         card.width          = "260px";
         card.height         = "300px";
@@ -398,24 +400,47 @@ export class MenuScene {
         desc.lineSpacing    = "4px";
         card.addControl(desc);
 
-        card.onPointerEnterObservable.add(() => {
-            eventBus.emit('ui:hoover');
-            card.background = `${baseColor}35`; card.scaleX = 1.05; card.scaleY = 1.05;
-            card.thickness  = 4; card.color = "#a78bfa";
-        });
-        card.onPointerOutObservable.add(() => {
-            card.background = `${baseColor}15`; card.scaleX = 1; card.scaleY = 1;
-            card.thickness  = 3; card.color = baseColor;
-        });
-        card.onPointerClickObservable.add(() => {
-            card.scaleX = 0.95; card.scaleY = 0.95;
-            setTimeout(() => { card.scaleX = 1.05; card.scaleY = 1.05; onClick(); }, 100);
-        });
+        if (available) {
+            card.onPointerEnterObservable.add(() => {
+                eventBus.emit('ui:hoover');
+                card.background = `${baseColor}35`; card.scaleX = 1.05; card.scaleY = 1.05;
+                card.thickness  = 4; card.color = "#a78bfa";
+            });
+            card.onPointerOutObservable.add(() => {
+                card.background = `${baseColor}15`; card.scaleX = 1; card.scaleY = 1;
+                card.thickness  = 3; card.color = baseColor;
+            });
+            card.onPointerClickObservable.add(() => {
+                card.scaleX = 0.95; card.scaleY = 0.95;
+                setTimeout(() => { card.scaleX = 1.05; card.scaleY = 1.05; onClick(); }, 100);
+            });
+            return card;
+        }
+
+        card.color = "#6b7280";
+        card.background = "rgba(75, 85, 99, 0.18)";
+        iconText.color = "#9ca3af";
+        jpTitle.color = "#9ca3af";
+        mainTitle.color = "#d1d5db";
+        desc.color = "#9ca3af";
+
+        const overlay = new GUI.Rectangle(`modeOverlay_${id}`);
+        overlay.thickness = 0;
+        overlay.background = "rgba(17, 24, 39, 0.55)";
+        const overlayText = new GUI.TextBlock();
+        overlayText.text = "INDISPONIBLE";
+        overlayText.color = "#cbd5e1";
+        overlayText.fontSize = 18;
+        overlayText.fontFamily = "'Orbitron', sans-serif";
+        overlayText.fontWeight = "bold";
+        overlayText.top = "95px";
+        overlay.addControl(overlayText);
+        card.addControl(overlay);
 
         return card;
     }
 
-    createLevelButton(number, japaneseName, romajiName) {
+    createLevelButton(number, japaneseName, romajiName, available) {
         const container       = new GUI.Rectangle(`level${number}Container`);
         container.width       = "180px";
         container.height      = "120px";
@@ -447,21 +472,43 @@ export class MenuScene {
         rmName.top            = "40px";
         container.addControl(rmName);
 
-        container.onPointerEnterObservable.add(() => {
-            eventBus.emit('ui:hoover');
-            container.background = "rgba(139, 92, 246, 0.3)";
-            container.scaleX = 1.05; container.scaleY = 1.05;
-            container.thickness = 4; container.color = "#a78bfa";
-        });
-        container.onPointerOutObservable.add(() => {
-            container.background = "rgba(139, 92, 246, 0.1)";
-            container.scaleX = 1; container.scaleY = 1;
-            container.thickness = 3; container.color = "#8b5cf6";
-        });
-        container.onPointerClickObservable.add(() => {
-            eventBus.emit('ui:confirm');
-            this.startLevel(number, romajiName);
-        });
+        if (available) {
+            container.onPointerEnterObservable.add(() => {
+                eventBus.emit('ui:hoover');
+                container.background = "rgba(139, 92, 246, 0.3)";
+                container.scaleX = 1.05; container.scaleY = 1.05;
+                container.thickness = 4; container.color = "#a78bfa";
+            });
+            container.onPointerOutObservable.add(() => {
+                container.background = "rgba(139, 92, 246, 0.1)";
+                container.scaleX = 1; container.scaleY = 1;
+                container.thickness = 3; container.color = "#8b5cf6";
+            });
+            container.onPointerClickObservable.add(() => {
+                eventBus.emit('ui:confirm');
+                this.startLevel(number, romajiName);
+            });
+            return container;
+        }
+
+        container.color = "#6b7280";
+        container.background = "rgba(75, 85, 99, 0.18)";
+        levelNum.color = "#9ca3af";
+        jpName.color = "#d1d5db";
+        rmName.color = "#9ca3af";
+
+        const overlay = new GUI.Rectangle(`levelOverlay${number}`);
+        overlay.thickness = 0;
+        overlay.background = "rgba(17, 24, 39, 0.55)";
+        const overlayText = new GUI.TextBlock();
+        overlayText.text = "INDISPONIBLE";
+        overlayText.color = "#cbd5e1";
+        overlayText.fontSize = 12;
+        overlayText.fontFamily = "'Orbitron', sans-serif";
+        overlayText.fontWeight = "bold";
+        overlayText.top = "18px";
+        overlay.addControl(overlayText);
+        container.addControl(overlay);
 
         return container;
     }
@@ -551,6 +598,14 @@ export class MenuScene {
         if (this.sceneManager) {
             this.sceneManager.switchTo('CharactersSelectionScene', { city: romajiName, gameMode: this.gameMode });
         }
+    }
+
+    isModeAvailable(mode) {
+        return this.availableModes[mode] !== false;
+    }
+
+    isLevelAvailable(levelNumber) {
+        return this.availableLevels[levelNumber] !== false;
     }
 
     onDispose() {

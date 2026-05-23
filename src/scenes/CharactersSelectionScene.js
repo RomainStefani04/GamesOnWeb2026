@@ -22,6 +22,8 @@ export class CharactersSelectionScene {
         this.player1Preview = null;
         this.player2Preview = null;
 
+        this.availableCharacters = new Set(["akaza"]);
+
         // Qui est en train de choisir : 1 ou 2
         this.activePlayer = 1;
 
@@ -243,7 +245,7 @@ export class CharactersSelectionScene {
         characters.forEach((char, index) => {
             const row = Math.floor(index / cols);
             const col = index % cols;
-            const card = this.createCharacterCard(char);
+            const card = this.createCharacterCard(char, this.isCharacterAvailable(char.key));
             grid.addControl(card, row, col);
             this.characterCards[char.key] = card;
         });
@@ -251,7 +253,7 @@ export class CharactersSelectionScene {
         this.animateMenuEntry(gridContainer);
     }
 
-    createCharacterCard(charData) {
+    createCharacterCard(charData, available) {
         const card = new GUI.Rectangle(`card_${charData.key}`);
         card.width = "130px";
         card.height = "140px";
@@ -312,29 +314,51 @@ export class CharactersSelectionScene {
         card.metadata = {
             charKey: charData.key,
             charData: charData,
+            available,
             p1Indicator,
             p2Indicator
         };
 
-        // Hover
-        card.onPointerEnterObservable.add(() => {
-            eventBus.emit('ui:hoover');
-            card.background = "rgba(139, 92, 246, 0.25)";
-            card.scaleX = 1.08;
-            card.scaleY = 1.08;
-            card.thickness = 4;
-            card.color = "#a78bfa";
-        });
+        if (available) {
+            // Hover
+            card.onPointerEnterObservable.add(() => {
+                eventBus.emit('ui:hoover');
+                card.background = "rgba(139, 92, 246, 0.25)";
+                card.scaleX = 1.08;
+                card.scaleY = 1.08;
+                card.thickness = 4;
+                card.color = "#a78bfa";
+            });
 
-        card.onPointerOutObservable.add(() => {
-            this.updateCardVisual(card);
-        });
+            card.onPointerOutObservable.add(() => {
+                this.updateCardVisual(card);
+            });
 
-        // Click
-        card.onPointerClickObservable.add(() => {
-            eventBus.emit('ui:select');
-            this.selectCharacter(charData.key);
-        });
+            // Click
+            card.onPointerClickObservable.add(() => {
+                eventBus.emit('ui:select');
+                this.selectCharacter(charData.key);
+            });
+            return card;
+        }
+
+        card.color = "#6b7280";
+        card.background = "rgba(75, 85, 99, 0.18)";
+        portrait.alpha = 0.45;
+        fallbackText.color = "#94a3b8";
+
+        const overlay = new GUI.Rectangle(`locked_${charData.key}`);
+        overlay.thickness = 0;
+        overlay.background = "rgba(17, 24, 39, 0.55)";
+        const overlayText = new GUI.TextBlock();
+        overlayText.text = "INDISPONIBLE";
+        overlayText.color = "#cbd5e1";
+        overlayText.fontSize = 14;
+        overlayText.fontFamily = "'Orbitron', sans-serif";
+        overlayText.fontWeight = "bold";
+        overlayText.top = "48px";
+        overlay.addControl(overlayText);
+        card.addControl(overlay);
 
         return card;
     }
@@ -444,7 +468,11 @@ export class CharactersSelectionScene {
     }
 
     autoSelectPlayer2() {
-        const characters = this.assetManager.getCharacterList();
+        const characters = this.assetManager.getCharacterList().filter(char => this.isCharacterAvailable(char.key));
+        if (characters.length === 0) {
+            console.warn("Aucun personnage disponible pour l'auto-sélection de l'IA.");
+            return;
+        }
         const randomIndex = Math.floor(Math.random() * characters.length);
         const randomChar = characters[randomIndex];
         this.setPlayer2Selection(randomChar.key);
@@ -565,6 +593,10 @@ export class CharactersSelectionScene {
         });
 
         return button;
+    }
+
+    isCharacterAvailable(charKey) {
+        return this.availableCharacters.has(charKey);
     }
 
     createCursedEnergyParticles() {
