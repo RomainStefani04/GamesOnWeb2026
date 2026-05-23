@@ -1,0 +1,37 @@
+import { CharacterState } from './CharacterState';
+
+export class StunState extends CharacterState {
+    constructor(stateMachine) {
+        super(stateMachine);
+        this.name = "Stun";
+        this.duration = 0;
+        this.elapsed = 0;
+        this.animation = {
+            name: 'stun',
+            loop: false,
+            speed: 1.2,
+            blending: 1,
+            from: 20,       // skip le début de l'animation (wind-up)
+            to: null
+        };
+    }
+
+    enter(params = {}) {
+        this.isBlocking = true;
+        this.duration = params.duration || 0.3;
+        this.elapsed = 0;
+        this.character.stop();
+        this.playStateAnimation();
+    }
+
+    exit() {
+        this.isBlocking = false;
+    }
+
+    update(deltaTime) {
+        this.elapsed += deltaTime;
+        if (this.elapsed >= this.duration) {
+            this.isBlocking = false;
+        }
+    }
+}

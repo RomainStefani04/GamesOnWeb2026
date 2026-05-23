@@ -1,21 +1,21 @@
 import { AttackState } from './AttackState';
+import { MoveRegistry } from '../../../../combat/MoveRegistry';
 
 /**
- * Jab - Coup de poing rapide
+ * Jab — Coup de poing rapide
  */
 export class JabState extends AttackState {
     constructor(stateMachine) {
         super(stateMachine);
         this.name = "Jab";
-        this.animationName = 'jab';
-        this.attackDuration = 0.60;
-    }
-
-    enter(params = {}) {
-        super.enter(params);
-    }
-
-    update(deltaTime) {
-        super.update(deltaTime);
+        this.moveData = MoveRegistry.jab;
+        this.animation = {
+            name: 'jab',
+            loop: false,
+            speed: 1.8,
+            blending: 0.1,
+            from: 0,
+            to: 60
+        };
     }
 }
