@@ -59,7 +59,7 @@ export class AttackState extends CharacterState {
         debugMat.diffuseColor = new BABYLON.Color3(1, 0, 0);
         debugMat.alpha = 0.4;
         this.hitboxMesh.material = debugMat;
-        this.hitboxMesh.isVisible = false;
+        this.hitboxMesh.isVisible = true;
 
         this.hitboxMesh.isPickable = false;
         this.hitboxMesh.parent = this.boneNode;

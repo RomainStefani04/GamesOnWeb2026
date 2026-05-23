@@ -71,7 +71,7 @@ export class WetGroundSystem {
         this._mirrorTexture.mirrorPlane = new BABYLON.Plane(0, -1, 0, 0.01); // Reflète sur l'axe Y
         this._mirrorTexture.blurKernel = 16; // Flou pour simuler l'eau légèrement agitée
         this._mirrorTexture.renderList = []; // On remplira cette liste avec les persos et l'arène
-        console.log("Miroir créé :", this._mirrorTexture);
+        //console.log("Miroir créé :", this._mirrorTexture);
         
         // On applique le miroir sur la réflexion
         this._material.reflectionTexture = this._mirrorTexture;
@@ -89,7 +89,7 @@ export class WetGroundSystem {
      * @param {BABYLON.AbstractMesh | BABYLON.AbstractMesh[]} meshes 
      */
     addMeshToReflections(meshes) {
-        console.log(this._mirrorTexture);
+        //console.log(this._mirrorTexture);
         if (!this._mirrorTexture || !this._mirrorTexture.renderList) return;
 
         if (Array.isArray(meshes)) {

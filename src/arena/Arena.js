@@ -185,6 +185,7 @@ export class Arena {
         this.arenaMesh.position = new BABYLON.Vector3(-1, 0, 0);
         this.arenaMesh.scaling  = new BABYLON.Vector3(0.21, 0.21, 0.21);
         this.arenaMesh.rotation = new BABYLON.Vector3(0, 0, 0);
+        this.weatherMode = 'clear';
 
         // Par temps de pluie → ciel plus sombre (nuageux)
         this.scene.clearColor = this.weatherMode === 'rain'

@@ -1,6 +1,7 @@
 import { MusicChannel }   from './channels/MusicChannel.js';
 import { SFXChannel }     from './channels/SFXChannel.js';
 import { VoiceChannel }   from './channels/VoiceChannel.js';
+import { SettingsManager } from '../core/SettingsManager.js';
 
 /**
  * AudioMixer — Façade technique.
@@ -11,9 +12,8 @@ export class AudioMixer {
     this.music    = new MusicChannel(scene);
     this.sfx      = new SFXChannel(scene);
     this.voice    = new VoiceChannel(scene);
-
-    this._masterVolume = 1.0;
     this._masterMuted  = false;
+    this.setMasterVolume(SettingsManager.volume);
   }
 
   setMasterVolume(value) {

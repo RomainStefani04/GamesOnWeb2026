@@ -31,15 +31,15 @@ export class Game {
         // Abonne tous les listeners EventBus du SoundSystem
         this.soundSystem.init();
 
-        //this.sceneManager.switchTo('MenuScene');
+        this.sceneManager.switchTo('MenuScene');
 
-        this.sceneManager.switchTo('FightScene', {
-            city: "tokyo",
-            characters: {
-                player1: 'akaza',
-                player2: 'akaza'
-            }
-        });
+        // this.sceneManager.switchTo('FightScene', {
+        //     city: "tokyo",
+        //     characters: {
+        //         player1: 'akaza',
+        //         player2: 'akaza'
+        //     }
+        // });
 
         this.initialized = true;
     }

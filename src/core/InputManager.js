@@ -1,24 +1,40 @@
 import * as BABYLON from '@babylonjs/core';
+import { SettingsManager } from './SettingsManager';
 
 export class InputManager {
     constructor(scene) {
         this.keys = {};
-        this.mouseButtons = {};
-        this.keysPressed = {};
-        this.mouseButtonsPressed = {};
+        this.gamepads = []; // Tableau pour stocker plusieurs manettes
 
-        // Gestion du clavier
-        scene.onKeyboardObservable.add((info) => {
-            this.keys[info.event.code] = info.type === 1;
+        const gamepadManager = new BABYLON.GamepadManager();
+        
+        gamepadManager.onGamepadConnectedObservable.add((gp) => {
+            // gp.index donne l'ordre de branchement (0, 1, 2...)
+            this.gamepads[gp.index] = gp;
+            
+            const targetPlayer = (gp.index === 0) ? 'player1' : 'player2';
+            
+            // On ne change le mode QUE pour ce joueur
+            SettingsManager.controlModes[targetPlayer] = 'gamepad';
+            SettingsManager.save();
+
+            console.log(`Manette détectée pour ${targetPlayer}`);
+            
+            window.dispatchEvent(new CustomEvent('inputModeChanged', { 
+                detail: { player: targetPlayer, mode: 'gamepad' } 
+            }));
         });
 
-        // Gestion de la souris
-        scene.onPointerObservable.add((info) => {
-            if (info.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this.mouseButtons[info.event.button] = true;
-            } else if (info.type === BABYLON.PointerEventTypes.POINTERUP) {
-                this.mouseButtons[info.event.button] = false;
-            }
+        gamepadManager.onGamepadDisconnectedObservable.add((gp) => {
+            const targetPlayer = (gp.index === 0) ? 'player1' : 'player2';
+            this.gamepads[gp.index] = null;
+            
+            SettingsManager.controlModes[targetPlayer] = 'keyboard';
+            SettingsManager.save();
+
+            window.dispatchEvent(new CustomEvent('inputModeChanged', { 
+                detail: { player: targetPlayer, mode: 'keyboard' } 
+            }));
         });
     }
 
@@ -26,33 +42,16 @@ export class InputManager {
         return this.keys[key] || false;
     }
 
-    isKeyReleased(key) {
-        const isPressed = this.isKeyPressed(key);
-        if (isPressed) {
-            this.keysPressed[key] = true;
-            return false;
+    async captureNextKey() {
+        this.isRebinding = true;
+        this.lastKeyPressed = null;
+        
+        while (this.lastKeyPressed === null) {
+            await new Promise(r => setTimeout(r, 16));
         }
-        if (!isPressed && this.keysPressed[key]) {
-            this.keysPressed[key] = false;
-            return true;
-        }
-        return false;
-    }
-
-    isMouseButtonPressed(button) {
-        return this.mouseButtons[button] || false;
-    }
-
-    isMouseButtonReleased(button) {
-        const isPressed = this.isMouseButtonPressed(button);
-        if (isPressed) {
-            this.mouseButtonsPressed[button] = true;
-            return false;
-        }
-        if (!isPressed && this.mouseButtonsPressed[button]) {
-            this.mouseButtonsPressed[button] = false;
-            return true;
-        }
-        return false;
+        
+        const key = this.lastKeyPressed;
+        this.isRebinding = false;
+        return key;
     }
 }

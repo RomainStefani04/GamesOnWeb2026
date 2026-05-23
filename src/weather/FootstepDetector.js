@@ -27,7 +27,7 @@ export class FootstepDetector {
         this._createProbe('left', this._leftBoneName);
         this._createProbe('right', this._rightBoneName);
 
-        // 2. Observer de rendu (comme ton damageObserver)
+        // 2. Observer de rendu
         this._observer = this.scene.onBeforeRenderObservable.add(() => {
             this._updateFoot('left');
             this._updateFoot('right');
@@ -38,7 +38,7 @@ export class FootstepDetector {
         const boneNode = this.player.getBoneNode(boneName);
         if (!boneNode) return;
 
-        // Création du mesh (comme ta hitbox)
+        // Création du mesh 
         const mesh = BABYLON.MeshBuilder.CreateSphere(
             `footProbe_${side}_${this.player.name}`,
             { diameter: 0.19 },
@@ -50,10 +50,10 @@ export class FootstepDetector {
         mat.diffuseColor = (side === 'left') ? new BABYLON.Color3(0, 0, 1) : new BABYLON.Color3(1, 0, 0);
         mat.alpha = 0.4;
         mesh.material = mat;
-        mesh.isVisible = true;
+        mesh.isVisible = false;
         mesh.isPickable = false;
 
-        // Configuration du parentage et compensation de scale (Ton code AttackState)
+        // Configuration du parentage et compensation de scale
         mesh.parent = boneNode;
         const boneScale = boneNode.getWorldMatrix().getRow(0).length();
         if (boneScale > 0) {

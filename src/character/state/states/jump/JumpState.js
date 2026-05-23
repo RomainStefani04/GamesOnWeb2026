@@ -70,7 +70,7 @@ export class JumpState extends CharacterState {
 
         // Fallback : vitesse verticale quasi nulle = retombée
         const velocity = this.character.physicsBody.getLinearVelocity();
-        // console.log("Vitesse actuelle :", velocity.y );
+        console.log("Vitesse actuelle :", velocity.y );
         if (velocity && Math.abs(velocity.y) < 0.001 && this._airTime > minAirTime){
             this.character.hurtbox.scaling.y = 1;
             return true;
@@ -83,6 +83,7 @@ export class JumpState extends CharacterState {
     }
 
     _onLand() {
+        console.log("Personnage a atterri après", this._airTime.toFixed(2), "secondes de saut.");
         this.stateMachine.changeState(this.stateMachine.states.idle);
     }
 }

@@ -30,6 +30,10 @@ export class SoundSystem {
         this._mixer.sfx.preload(lib.sfx.HIT_HEAVY.src,   lib.sfx.HIT_HEAVY.pool),
         this._mixer.sfx.preload(lib.sfx.FIREBALL.src, lib.sfx.FIREBALL.pool),
         this._mixer.music.preload(lib.music.TOKYO_STAGE.src, 1),
+        this._mixer.sfx.preload(lib.sfx.UI_SELECT.src, lib.sfx.UI_SELECT.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_CONFIRM.src, lib.sfx.UI_CONFIRM.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_BACK.src, lib.sfx.UI_BACK.pool),
+        this._mixer.sfx.preload(lib.sfx.UI_HOOVER.src, lib.sfx.UI_HOOVER.pool),
       ]);
     }
 
@@ -107,6 +111,13 @@ export class SoundSystem {
     );
     this._unsubs.push(
       this._eventBus.on('ui:hoover',    () => sfx.play(lib.sfx.UI_HOOVER.src))
+    );
+
+    // Volume
+    this._unsubs.push(
+      this._eventBus.on('settings:volumeChanged', (volume) => {
+        this._mixer.setMasterVolume(volume);
+      })
     );
 
     // ── Scènes ──────────────────────────────────────────────────────────────
