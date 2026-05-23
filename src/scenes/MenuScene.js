@@ -303,8 +303,8 @@ export class MenuScene {
         creditsPanel.addControl(creditsStack);
 
         [
-            { role: "DÉVELOPPEURS",  name: "Romain / Guillaume"       },
-            { role: "GAME DESIGNERS", name: "Guillaume / Romain"       },
+            { role: "DÉVELOPPEURS",  name: "Romain STEFANI / Guillaume FAURE"       },
+            { role: "GAME DESIGNERS", name: "Guillaume FAURE / Romain STEFANI"       },
             { role: "ARTWORK",        name: "Style Jujutsu Kaisen"     },
             { role: "ENGINE",         name: "BabylonJS"                },
             { role: "INSPIRATION",    name: "芥見下々 (Gege Akutami)"  },
