@@ -10,7 +10,7 @@ import { MatchManager }      from '../combat/MatchManager';
 import { WeatherSystem }     from '../weather/WeatherSystem';
 import { FootstepDetector }  from '../weather/FootstepDetector';
 import { SettingsUI }        from '../ui/SettingsUI';
-import { AIInputMapper } from '../ai/AiInputMapper';
+import { AIInputMapper } from '../ai/AIInputMapper';
 import { AIController } from '../ai/AIController';
 import { eventBus } from '../core/EventBus';
 
