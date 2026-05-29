@@ -155,6 +155,25 @@ export class Arena {
             mesh.receiveShadows = true; // Les ombres des joueurs s'afficheront sur les murs
         });
 
+        // Murs de collision
+        const createWall = (name, z) => {
+            const wall = BABYLON.MeshBuilder.CreateBox(name, { width: 10, height: 5, depth: 2 }, this.scene);
+            wall.position = new BABYLON.Vector3(0, 2.5, z);
+            wall.isVisible = false;
+            
+            const body = new BABYLON.PhysicsBody(wall, BABYLON.PhysicsMotionType.STATIC, false, this.scene);
+            body.shape = new BABYLON.PhysicsShapeBox(
+                new BABYLON.Vector3(0, 0, 0),
+                BABYLON.Quaternion.Identity(),
+                new BABYLON.Vector3(10, 5, 2),
+                this.scene
+            );
+        };
+
+        console.log("murs de collision créés");
+        createWall("wallLeft", -7);
+        createWall("wallRight", 7);
+
         if (this.wetGroundSystem) {
             const allMeshes = this.arenaMesh.getChildMeshes();
             this.wetGroundSystem.addMeshToReflections(allMeshes);
