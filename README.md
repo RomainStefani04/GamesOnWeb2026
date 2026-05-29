@@ -90,5 +90,5 @@ Le jeu est jouable, mais encore en cours de développement (pas forcement à jou
 
 ## Documentation
 
-Un rapport décrit le jeu de manière plus détaillée et
+Un [rapport](./Rapport.pdf) décrit le jeu de manière plus détaillée et
 plus technique (architecture, choix de développement, game design).
