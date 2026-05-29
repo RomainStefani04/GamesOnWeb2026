@@ -99,14 +99,53 @@ export class AssetManager {
             throw new Error(`Character container not loaded for: ${key}`);
         }
 
+        // 1. On crée un identifiant unique pour cette instance spécifique
+        const instanceId = Date.now();
         const instance = container.instantiateModelsToScene(
-            (name) => `${name}_${key}_${Date.now()}`
+            (name) => `${name}_${key}_${instanceId}`
         );
 
+        let finalAnimationGroups = instance.animationGroups;
+
+        // 2. Si ce n'est pas Akaza, on applique le re-ciblage natif BabylonJS 9
+        if (key !== "akaza") {
+            const akazaContainer = this.characterContainers["akaza"];
+            
+            if (akazaContainer && akazaContainer.animationGroups) {
+                // On récupère le nœud racine du personnage que l'on vient de cloner (ex: Yuji)
+                const targetRootNode = instance.rootNodes[0];
+
+                // On initialise l'AnimatorAvatar sur notre personnage cible
+                // Cette classe va scanner le squelette sous le targetRootNode
+                const avatar = new BABYLON.AnimatorAvatar(`${key}_avatar_${instanceId}`, targetRootNode);
+                
+                // Facultatif : Désactive les logs d'avertissements dans la console si tes squelettes matchent à 100%
+                avatar.showWarnings = false; 
+
+                // On mappe chaque groupe d'animation d'Akaza vers notre nouvel avatar
+                finalAnimationGroups = akazaContainer.animationGroups.map(sourceGroup => {
+                    // L'API magique de la V9 : elle crée un nouveau groupe adapté au squelette cible
+                    const retargetedGroup = avatar.retargetAnimationGroup(sourceGroup);
+                    
+                    // On renomme proprement le groupe pour s'y retrouver dans l'Inspector
+                    retargetedGroup.name = `${sourceGroup.name}_${key}_${instanceId}`;
+                    
+                    return retargetedGroup;
+                });
+
+                // On écrase les animations de l'instance par les animations re-ciblées.
+                // Crucial pour que ton code de 'dispose()' actuel nettoie tout automatiquement !
+                instance.animationGroups = finalAnimationGroups;
+            } else {
+                console.warn(`[AssetManager] Impossible de re-cibler : Le modèle d'Akaza (banque d'animations) n'est pas chargé.`);
+            }
+        }
+
         this.instances.push(instance);
+
         return {
             mesh: instance.rootNodes[0],
-            animationGroups: instance.animationGroups
+            animationGroups: finalAnimationGroups
         };
     }
 
@@ -132,11 +171,24 @@ export class AssetManager {
             this.scene
         );
 
-        // Étape 2 : Charger les personnages sélectionnés
-        let progressStep = 40; // On commence après l'arène
-        for (const key of characterKeys) {
+        // Étape 2 : Préparer les personnages à charger
+        // Le Set garantit qu'Akaza est inclus, sans doublon si un joueur l'a choisi
+        const keysToLoad = Array.from(new Set([...characterKeys, "akaza"]));
+        
+        // Calcul dynamique de la progression (on a ~70% de la barre à distribuer)
+        let progressStep = 20; 
+        const stepIncrement = Math.floor(70 / keysToLoad.length);
+
+        for (const key of keysToLoad) {
             const charData = this.paths.characters[key];
-            onProgress(progressStep, `キャラ読み込み中... | Chargement de ${charData.name}...`);
+            
+            // Petite distinction cosmétique dans le loader si Akaza est chargé "en douce"
+            const isHiddenBank = !characterKeys.includes(key);
+            const loadingMessage = isHiddenBank 
+                ? `システム準備中... | Configuration du système d'animations...`
+                : `${charData.name} 読み込み中... | Chargement de ${charData.name}...`;
+
+            onProgress(progressStep, loadingMessage);
             
             try {
                 this.characterContainers[key] = await BABYLON.LoadAssetContainerAsync(
@@ -145,8 +197,12 @@ export class AssetManager {
                 );
             } catch (e) {
                 console.error(`Erreur chargement perso ${key}:`, e);
+                // Si c'est Akaza qui plante, on prévient direct car les anims vont casser
+                if (key === "akaza") {
+                    console.error("CRITICAL: Le modèle source des animations (Akaza) n'a pas pu être chargé !");
+                }
             }
-            progressStep += 25;
+            progressStep += stepIncrement;
         }
 
         // Chargement terminé

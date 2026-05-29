@@ -18,14 +18,24 @@ export class CharactersSelectionScene {
         this.player1Selection = null;
         this.player2Selection = null;
 
+        // États de validation (Ready System)
+        this.player1Ready = false;
+        this.player2Ready = false;
+
         // Modèles 3D preview
         this.player1Preview = null;
         this.player2Preview = null;
 
-        this.availableCharacters = new Set(["akaza"]);
+        this.availableCharacters = new Set(["akaza","yuta","gyutaro","yuji","sukuna","toji"]); //
 
         // Qui est en train de choisir : 1 ou 2
         this.activePlayer = 1;
+
+        // Références UI pour les boutons de validation individuels
+        this.p1ReadyButton = null;
+        this.p1ReadyButtonText = null;
+        this.p2ReadyButton = null;
+        this.p2ReadyButtonText = null;
 
         // Références UI pour highlights
         this.characterCards = {};
@@ -37,8 +47,8 @@ export class CharactersSelectionScene {
     }
 
     initScene() {
-        this.scene = new BABYLON.Scene(this.engine);
-        this.scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1);
+        this.scene = new BABYLON.Scene(this.engine); //
+        this.scene.clearColor = new BABYLON.Color4(0.04, 0.04, 0.06, 1); //
     }
 
     setup() {
@@ -68,9 +78,9 @@ export class CharactersSelectionScene {
             this.scene
         );
         this.mainCamera.inputs.clear(); // Empêcher l'utilisateur de bouger la caméra
-        this.mainCamera.lowerRadiusLimit = 10;
-        this.mainCamera.upperRadiusLimit = 10;
-        this.scene.activeCamera = this.mainCamera;
+        this.mainCamera.lowerRadiusLimit = 10; //
+        this.mainCamera.upperRadiusLimit = 10; //
+        this.scene.activeCamera = this.mainCamera; //
     }
 
     // ==========================================
@@ -82,8 +92,8 @@ export class CharactersSelectionScene {
             new BABYLON.Vector3(0, 1, 0),
             this.scene
         );
-        hemiLight.intensity = 0.6;
-        hemiLight.diffuse = new BABYLON.Color3(0.6, 0.5, 0.8);
+        hemiLight.intensity = 0.6; //
+        hemiLight.diffuse = new BABYLON.Color3(0.6, 0.5, 0.8); //
     }
 
     // ==========================================
@@ -96,161 +106,180 @@ export class CharactersSelectionScene {
     // INTERFACE UTILISATEUR
     // ==========================================
     createUI() {
-        this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("SelectionUI");
+        this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("SelectionUI"); //
 
         // ---- TITRE ----
         const titleText = new GUI.TextBlock("selTitle");
-        titleText.text = "キャラクター選択";
-        titleText.color = "#e8d5f2";
-        titleText.fontSize = 40;
-        titleText.fontFamily = "'Noto Serif JP', serif";
-        titleText.top = "-42%";
-        titleText.shadowColor = "#8b5cf6";
-        titleText.shadowBlur = 20;
-        this.advancedTexture.addControl(titleText);
+        titleText.text = "キャラクター選択"; //
+        titleText.color = "#e8d5f2"; //
+        titleText.fontSize = 40; //
+        titleText.fontFamily = "'Noto Serif JP', serif"; //
+        titleText.top = "-42%"; //
+        titleText.shadowColor = "#8b5cf6"; //
+        titleText.shadowBlur = 20; //
+        this.advancedTexture.addControl(titleText); //
 
         const subtitleText = new GUI.TextBlock("selSubtitle");
-        subtitleText.text = "CHARACTER SELECT";
-        subtitleText.color = "#a78bfa";
-        subtitleText.fontSize = 18;
-        subtitleText.fontFamily = "'Orbitron', sans-serif";
-        subtitleText.top = "-37%";
-        this.advancedTexture.addControl(subtitleText);
+        subtitleText.text = "CHARACTER SELECT"; //
+        subtitleText.color = "#a78bfa"; //
+        subtitleText.fontSize = 18; //
+        subtitleText.fontFamily = "'Orbitron', sans-serif"; //
+        subtitleText.top = "-37%"; //
+        this.advancedTexture.addControl(subtitleText); //
 
         // ---- PANNEAU JOUEUR 1 (gauche) ----
-        this.createPlayerPanel("left", 1);
+        this.createPlayerPanel("left", 1); //
 
         // ---- PANNEAU JOUEUR 2 (droite) ----
-        this.createPlayerPanel("right", 2);
+        this.createPlayerPanel("right", 2); //
 
         // ---- INDICATEUR DU JOUEUR ACTIF ----
-        this.turnIndicator = new GUI.TextBlock("turnIndicator");
-        this.turnIndicator.color = "#8b5cf6";
-        this.turnIndicator.fontSize = 16;
-        this.turnIndicator.fontFamily = "'Orbitron', sans-serif";
-        this.turnIndicator.top = "-30%";
-        this.advancedTexture.addControl(this.turnIndicator);
+        this.turnIndicator = new GUI.TextBlock("turnIndicator"); //
+        this.turnIndicator.fontSize = 16; //
+        this.turnIndicator.fontFamily = "'Orbitron', sans-serif"; //
+        this.turnIndicator.top = "-30%"; //
+        this.advancedTexture.addControl(this.turnIndicator); //
         this.updateTurnIndicator();
 
         // ---- GRILLE DE PERSONNAGES (centre) ----
-        this.createCharacterGrid();
+        this.createCharacterGrid(); //
 
-        // ---- BOUTON CONFIRMER ----
-        this.confirmButton = this.createStyledButton("CONFIRMER", "#8b5cf6", () => {
-            eventBus.emit('ui:confirm');
-            this.confirmSelection();
+        // ---- BOUTON CONFIRMER GLOBAL ----
+        this.confirmButton = this.createStyledButton("CONFIRMER LE COMBAT", "#22c55e", () => {
+            eventBus.emit('ui:confirm'); //
+            this.confirmSelection(); //
         });
-        this.confirmButton.top = "42%";
-        this.confirmButton.isVisible = false;
-        this.advancedTexture.addControl(this.confirmButton);
+        this.confirmButton.top = "42%"; //
+        this.confirmButton.isVisible = false; //
+        this.advancedTexture.addControl(this.confirmButton); //
 
         // ---- BOUTON RETOUR ----
         const backButton = this.createStyledButton("RETOUR", "#4c1d95", () => {
-            eventBus.emit('ui:back');
-            this.sceneManager.switchTo('MenuScene');
+            eventBus.emit('ui:back'); //
+            this.sceneManager.switchTo('MenuScene'); //
         });
-        backButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        backButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        backButton.top = "20px";
-        backButton.left = "20px";
-        this.advancedTexture.addControl(backButton);
+        backButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT; //
+        backButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP; //
+        backButton.top = "20px"; //
+        backButton.left = "20px"; //
+        this.advancedTexture.addControl(backButton); //
 
         // ---- KEYBOARD ----
-        this.setupKeyboard();
+        this.setupKeyboard(); //
     }
 
     createPlayerPanel(side, playerNum) {
-        const isLeft = side === "left";
-        const xPos = isLeft ? "-38%" : "38%";
-        const color = isLeft ? "#8b5cf6" : "#ef4444";
-        const label = isLeft ? "JOUEUR 1" : (this.gameMode === "solo" ? "IA" : "JOUEUR 2");
-        const jpLabel = isLeft ? "プレイヤー1" : (this.gameMode === "solo" ? "AI" : "プレイヤー2");
+        const isLeft = side === "left"; //
+        const xPos = isLeft ? "-38%" : "38%"; //
+        const color = isLeft ? "#8b5cf6" : "#ef4444"; //
+        const label = isLeft ? "JOUEUR 1" : (this.gameMode === "solo" ? "IA" : "JOUEUR 2"); //
+        const jpLabel = isLeft ? "プレイヤー1" : (this.gameMode === "solo" ? "AI" : "プレイヤー2"); //
 
         // Conteneur du panneau
-        const panel = new GUI.Rectangle(`p${playerNum}Panel`);
-        panel.width = "320px";
-        panel.height = "620px";
-        panel.left = xPos;
-        panel.top = "30px";
-        panel.cornerRadius = 15;
-        panel.thickness = 3;
-        panel.color = color;
-        panel.background = `${color}10`;
-        this.advancedTexture.addControl(panel);
+        const panel = new GUI.Rectangle(`p${playerNum}Panel`); //
+        panel.width = "320px"; //
+        panel.height = "620px"; //
+        panel.left = xPos; //
+        panel.top = "30px"; //
+        panel.cornerRadius = 15; //
+        panel.thickness = 3; //
+        panel.color = color; //
+        panel.background = `${color}10`; //
+        this.advancedTexture.addControl(panel); //
 
         // Label joueur
-        const playerLabel = new GUI.TextBlock(`p${playerNum}Label`);
-        playerLabel.text = label;
-        playerLabel.color = color;
-        playerLabel.fontSize = 18;
-        playerLabel.fontFamily = "'Orbitron', sans-serif";
-        playerLabel.fontWeight = "bold";
-        playerLabel.top = "-275px";
-        panel.addControl(playerLabel);
+        const playerLabel = new GUI.TextBlock(`p${playerNum}Label`); //
+        playerLabel.text = label; //
+        playerLabel.color = color; //
+        playerLabel.fontSize = 18; //
+        playerLabel.fontFamily = "'Orbitron', sans-serif"; //
+        playerLabel.fontWeight = "bold"; //
+        playerLabel.top = "-275px"; //
+        panel.addControl(playerLabel); //
 
         // Sous-label japonais
-        const jpLabelText = new GUI.TextBlock(`p${playerNum}JpLabel`);
-        jpLabelText.text = jpLabel;
-        jpLabelText.color = "#a78bfa";
-        jpLabelText.fontSize = 14;
-        jpLabelText.fontFamily = "'Noto Serif JP', serif";
-        jpLabelText.top = "-250px";
-        panel.addControl(jpLabelText);
+        const jpLabelText = new GUI.TextBlock(`p${playerNum}JpLabel`); //
+        jpLabelText.text = jpLabel; //
+        jpLabelText.color = isLeft ? "#a78bfa" : "#f87171";
+        jpLabelText.fontSize = 14; //
+        jpLabelText.fontFamily = "'Noto Serif JP', serif"; //
+        jpLabelText.top = "-250px"; //
+        panel.addControl(jpLabelText); //
 
         // Nom du personnage sélectionné
-        const nameText = new GUI.TextBlock(`p${playerNum}CharName`);
-        nameText.text = "";
-        nameText.color = "#e8d5f2";
-        nameText.fontSize = 16;
-        nameText.fontWeight = "bold";
-        nameText.fontFamily = "'Noto Serif JP', serif";
-        nameText.top = "270px";
-        panel.addControl(nameText);
+        const nameText = new GUI.TextBlock(`p${playerNum}CharName`); //
+        nameText.text = ""; //
+        nameText.color = "#e8d5f2"; //
+        nameText.fontSize = 16; //
+        nameText.fontWeight = "bold"; //
+        nameText.fontFamily = "'Noto Serif JP', serif"; //
+        nameText.top = "270px"; //
+        panel.addControl(nameText); //
 
         if (playerNum === 1) {
-            this.player1NameText = nameText;
+            this.player1NameText = nameText; //
         } else {
-            this.player2NameText = nameText;
+            this.player2NameText = nameText; //
+        }
+
+        // ---- AJOUT : BOUTON DE VALIDATION INDIVIDUEL (MODE PVP UNIQUEMENT) ----
+        if (this.gameMode === "pvp") {
+            const readyBtn = this.createStyledButton("VALIDER", color, () => {
+                this.togglePlayerReady(playerNum);
+            });
+            readyBtn.width = "180px";
+            readyBtn.height = "42px";
+            readyBtn.top = "210px"; // Situé idéalement au dessus du nom du perso
+            readyBtn.isVisible = false; // Devient visible dès qu'un perso est cliqué
+            panel.addControl(readyBtn);
+
+            if (playerNum === 1) {
+                this.p1ReadyButton = readyBtn;
+                this.p1ReadyButtonText = readyBtn.children[0];
+            } else {
+                this.p2ReadyButton = readyBtn;
+                this.p2ReadyButtonText = readyBtn.children[0];
+            }
         }
     }
 
     createCharacterGrid() {
-        const characters = this.assetManager.getCharacterList();
+        const characters = this.assetManager.getCharacterList(); //
 
-        const gridContainer = new GUI.Rectangle("charGridContainer");
-        gridContainer.width = "460px";
-        gridContainer.height = "320px";
-        gridContainer.top = "30px";
-        gridContainer.thickness = 0;
-        gridContainer.background = "transparent";
-        this.advancedTexture.addControl(gridContainer);
+        const gridContainer = new GUI.Rectangle("charGridContainer"); //
+        gridContainer.width = "460px"; //
+        gridContainer.height = "320px"; //
+        gridContainer.top = "30px"; //
+        gridContainer.thickness = 0; //
+        gridContainer.background = "transparent"; //
+        this.advancedTexture.addControl(gridContainer); //
 
-        const grid = new GUI.Grid("charGrid");
-        grid.width = "100%";
-        grid.height = "100%";
+        const grid = new GUI.Grid("charGrid"); //
+        grid.width = "100%"; //
+        grid.height = "100%"; //
 
         // Calculer la disposition : 3 colonnes
-        const cols = 3;
-        const rows = Math.ceil(characters.length / cols);
+        const cols = 3; //
+        const rows = Math.ceil(characters.length / cols); //
 
         for (let r = 0; r < rows; r++) {
-            grid.addRowDefinition(1 / rows);
+            grid.addRowDefinition(1 / rows); //
         }
         for (let c = 0; c < cols; c++) {
-            grid.addColumnDefinition(1 / cols);
+            grid.addColumnDefinition(1 / cols); //
         }
 
-        gridContainer.addControl(grid);
+        gridContainer.addControl(grid); //
 
         characters.forEach((char, index) => {
-            const row = Math.floor(index / cols);
-            const col = index % cols;
-            const card = this.createCharacterCard(char, this.isCharacterAvailable(char.key));
-            grid.addControl(card, row, col);
-            this.characterCards[char.key] = card;
+            const row = Math.floor(index / cols); //
+            const col = index % cols; //
+            const card = this.createCharacterCard(char, this.isCharacterAvailable(char.key)); //
+            grid.addControl(card, row, col); //
+            this.characterCards[char.key] = card; //
         });
 
-        this.animateMenuEntry(gridContainer);
+        this.animateMenuEntry(gridContainer); //
     }
 
     createCharacterCard(charData, available) {
@@ -269,10 +298,10 @@ export class CharactersSelectionScene {
         portrait.width = "130px";
         portrait.height = "140px";
         portrait.stretch = GUI.Image.STRETCH_UNIFORM;
+        portrait.isHitTestVisible = false; // ◄ FIX : L'image n'intercepte plus la souris
         card.addControl(portrait);
 
-        // Fallback si image non trouvée : afficher initiale
-        portrait.onImageLoadedObservable.add(() => { });
+        // Fallback si image non trouvée
         const fallbackText = new GUI.TextBlock(`fallback_${charData.key}`);
         fallbackText.text = charData.name.charAt(0);
         fallbackText.color = "#8b5cf650";
@@ -280,9 +309,9 @@ export class CharactersSelectionScene {
         fallbackText.fontFamily = "'Noto Serif JP', serif";
         fallbackText.top = "-15px";
         fallbackText.isVisible = true;
+        fallbackText.isHitTestVisible = false; // ◄ FIX : Le texte n'intercepte plus la souris
         card.addControl(fallbackText);
 
-        // Quand l'image charge, masquer le fallback
         portrait.onImageLoadedObservable.add(() => {
             fallbackText.isVisible = false;
         });
@@ -297,6 +326,7 @@ export class CharactersSelectionScene {
         p1Indicator.top = "-50px";
         p1Indicator.left = "-45px";
         p1Indicator.isVisible = false;
+        p1Indicator.isHitTestVisible = false; // ◄ FIX
         card.addControl(p1Indicator);
 
         const p2Indicator = new GUI.TextBlock(`p2Ind_${charData.key}`);
@@ -308,6 +338,7 @@ export class CharactersSelectionScene {
         p2Indicator.top = "-50px";
         p2Indicator.left = "45px";
         p2Indicator.isVisible = false;
+        p2Indicator.isHitTestVisible = false; // ◄ FIX
         card.addControl(p2Indicator);
 
         // Stockage des références
@@ -320,7 +351,7 @@ export class CharactersSelectionScene {
         };
 
         if (available) {
-            // Hover
+            // Hover (Entrée)
             card.onPointerEnterObservable.add(() => {
                 eventBus.emit('ui:hoover');
                 card.background = "rgba(139, 92, 246, 0.25)";
@@ -330,6 +361,7 @@ export class CharactersSelectionScene {
                 card.color = "#a78bfa";
             });
 
+            // Hover (Sortie) -> Nettoyage propre garanti maintenant
             card.onPointerOutObservable.add(() => {
                 this.updateCardVisual(card);
             });
@@ -342,6 +374,7 @@ export class CharactersSelectionScene {
             return card;
         }
 
+        // Gestion du mode verrouillé
         card.color = "#6b7280";
         card.background = "rgba(75, 85, 99, 0.18)";
         portrait.alpha = 0.45;
@@ -350,6 +383,8 @@ export class CharactersSelectionScene {
         const overlay = new GUI.Rectangle(`locked_${charData.key}`);
         overlay.thickness = 0;
         overlay.background = "rgba(17, 24, 39, 0.55)";
+        overlay.isHitTestVisible = false; // ◄ FIX
+
         const overlayText = new GUI.TextBlock();
         overlayText.text = "INDISPONIBLE";
         overlayText.color = "#cbd5e1";
@@ -357,6 +392,8 @@ export class CharactersSelectionScene {
         overlayText.fontFamily = "'Orbitron', sans-serif";
         overlayText.fontWeight = "bold";
         overlayText.top = "48px";
+        overlayText.isHitTestVisible = false; // ◄ FIX
+        
         overlay.addControl(overlayText);
         card.addControl(overlay);
 
@@ -364,31 +401,31 @@ export class CharactersSelectionScene {
     }
 
     updateCardVisual(card) {
-        const key = card.metadata.charKey;
-        const isP1 = this.player1Selection === key;
-        const isP2 = this.player2Selection === key;
+        const key = card.metadata.charKey; //
+        const isP1 = this.player1Selection === key; //
+        const isP2 = this.player2Selection === key; //
 
-        card.scaleX = 1;
-        card.scaleY = 1;
+        card.scaleX = 1; //
+        card.scaleY = 1; //
 
         if (isP1 && isP2) {
-            card.background = "rgba(200, 120, 255, 0.3)";
-            card.thickness = 4;
-            card.color = "#c878ff";
+            card.background = "rgba(200, 120, 255, 0.3)"; //
+            card.thickness = 4; //
+            card.color = "#c878ff"; //
         } else if (isP1) {
-            card.background = "rgba(139, 92, 246, 0.3)";
-            card.thickness = 4;
-            card.color = "#8b5cf6";
+            card.background = "rgba(139, 92, 246, 0.3)"; //
+            card.thickness = 4; //
+            card.color = "#8b5cf6"; //
         } else if (isP2) {
-            card.background = "rgba(239, 68, 68, 0.3)";
-            card.thickness = 4;
-            card.color = "#ef4444";
+            card.background = "rgba(239, 68, 68, 0.3)"; //
+            card.thickness = 4; //
+            card.color = "#ef4444"; //
         } else {
-            card.background = "rgba(139, 92, 246, 0.08)";
-            card.thickness = 3;
-            card.color = "#8b5cf6";
-            card.scaleX = 1;
-            card.scaleY = 1;
+            card.background = "rgba(139, 92, 246, 0.08)"; //
+            card.thickness = 3; //
+            card.color = "#8b5cf6"; //
+            card.scaleX = 1; //
+            card.scaleY = 1; //
         }
     }
 
@@ -396,147 +433,226 @@ export class CharactersSelectionScene {
     // LOGIQUE DE SÉLECTION
     // ==========================================
     selectCharacter(charKey) {
-        if (this.activePlayer === 1) {
+        if (this.gameMode === "solo") {
+            // En Solo : Le joueur 1 peut modifier à sa guise sur la grille
             this.setPlayer1Selection(charKey);
-
-            if (this.gameMode === "pvp") {
-                this.activePlayer = 2;
-                this.updateTurnIndicator();
-            } else {
-                // Solo : on peut directement confirmer
-                this.checkConfirmReady();
+            this.checkConfirmReady();
+        } else {
+            // En PvP : On assigne selon le joueur actif, S'IL n'est pas déjà verrouillé (Ready)
+            if (this.activePlayer === 1 && !this.player1Ready) {
+                this.setPlayer1Selection(charKey);
+                this.p1ReadyButton.isVisible = true; // Rendre visible le bouton de validation du J1
+            } else if (this.activePlayer === 2 && !this.player2Ready) {
+                this.setPlayer2Selection(charKey);
+                this.p2ReadyButton.isVisible = true; // Rendre visible le bouton de validation du J2
             }
-        } else if (this.activePlayer === 2 && this.gameMode === "pvp") {
-            this.setPlayer2Selection(charKey);
             this.checkConfirmReady();
         }
     }
 
     setPlayer1Selection(charKey) {
-        // Reset ancien
-        if (this.player1Selection && this.characterCards[this.player1Selection]) {
-            const oldCard = this.characterCards[this.player1Selection];
-            oldCard.metadata.p1Indicator.isVisible = false;
-            this.player1Selection = null;
-            this.updateCardVisual(oldCard);
-        }
-
+        // 1. On sauvegarde l'ancienne clé et on met à jour la sélection DIRECTEMENT
+        const oldKey = this.player1Selection;
         this.player1Selection = charKey;
 
-        //eventBus.emit('voice:entry', { character: charKey });
+        // 2. On reset le visuel de l'ancienne carte (elle verra bien qu'elle n'est plus sélectionnée)
+        if (oldKey && this.characterCards[oldKey]) {
+            const oldCard = this.characterCards[oldKey];
+            oldCard.metadata.p1Indicator.isVisible = false;
+            this.updateCardVisual(oldCard); 
+        }
 
-        // Mettre à jour la carte
+        // 3. Mettre à jour la nouvelle carte cliquée
         const card = this.characterCards[charKey];
         if (card) {
             card.metadata.p1Indicator.isVisible = true;
             this.updateCardVisual(card);
+            
+            // Mettre à jour le nom dans le panneau gauche
+            const charData = card.metadata.charData;
+            this.player1NameText.text = charData.name;
         }
 
-        // Mettre à jour le panneau gauche
-        const charData = card.metadata.charData;
-        this.player1NameText.text = charData.name;
-
-        // Charger le modèle 3D preview
+        // Recharger le modèle 3D preview
         this.loadPreviewModel(1, charKey);
     }
 
     setPlayer2Selection(charKey) {
-        // Reset ancien
-        if (this.player2Selection && this.characterCards[this.player2Selection]) {
-            const oldCard = this.characterCards[this.player2Selection];
-            oldCard.metadata.p2Indicator.isVisible = false;
-            this.player2Selection = null;
-            this.updateCardVisual(oldCard);
-            this.player2Selection = null;
-        }
-
+        // 1. On sauvegarde l'ancienne clé et on met à jour la sélection DIRECTEMENT
+        const oldKey = this.player2Selection;
         this.player2Selection = charKey;
 
-        // Mettre à jour la carte
+        // 2. On reset le visuel de l'ancienne carte
+        if (oldKey && this.characterCards[oldKey]) {
+            const oldCard = this.characterCards[oldKey];
+            oldCard.metadata.p2Indicator.isVisible = false;
+            this.updateCardVisual(oldCard);
+        }
+
+        // 3. Mettre à jour la nouvelle carte cliquée
         const card = this.characterCards[charKey];
         if (card) {
             card.metadata.p2Indicator.isVisible = true;
             this.updateCardVisual(card);
+            
+            // Mettre à jour le nom dans le panneau droit
+            const charData = card.metadata.charData;
+            this.player2NameText.text = charData.name;
         }
 
-        // Mettre à jour le panneau droit
-        const charData = card.metadata.charData;
-        this.player2NameText.text = charData.name;
-
-        // Charger le modèle 3D preview
+        // Recharger le modèle 3D preview
         this.loadPreviewModel(2, charKey);
     }
 
-    autoSelectPlayer2() {
-        const characters = this.assetManager.getCharacterList().filter(char => this.isCharacterAvailable(char.key));
-        if (characters.length === 0) {
-            console.warn("Aucun personnage disponible pour l'auto-sélection de l'IA.");
-            return;
+    togglePlayerReady(playerNum) {
+        if (playerNum === 1) {
+            if (!this.player1Ready) {
+                if (!this.player1Selection) return;
+                this.player1Ready = true;
+                this.p1ReadyButtonText.text = "MODIFIER";
+                this.p1ReadyButton.background = "#8b5cf660"; // Donne un aspect plus opaque / validé
+                
+                // Si le joueur 2 n'a pas encore validé, on lui bascule automatiquement la main sur la grille
+                if (!this.player2Ready) {
+                    this.activePlayer = 2;
+                }
+            } else {
+                // Le joueur souhaite modifier son choix
+                this.player1Ready = false;
+                this.p1ReadyButtonText.text = "VALIDER";
+                this.p1ReadyButton.background = "#8b5cf620";
+                this.activePlayer = 1; // Reprend le focus sur la grille
+            }
+        } else if (playerNum === 2 && this.gameMode === "pvp") {
+            if (!this.player2Ready) {
+                if (!this.player2Selection) return;
+                this.player2Ready = true;
+                this.p2ReadyButtonText.text = "MODIFIER";
+                this.p2ReadyButton.background = "#ef444460";
+                
+                // Si le joueur 1 n'a pas encore validé, on lui remet la main
+                if (!this.player1Ready) {
+                    this.activePlayer = 1;
+                }
+            } else {
+                this.player2Ready = false;
+                this.p2ReadyButtonText.text = "VALIDER";
+                this.p2ReadyButton.background = "#ef444420";
+                this.activePlayer = 2; // Reprend le focus sur la grille
+            }
         }
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        const randomChar = characters[randomIndex];
-        this.setPlayer2Selection(randomChar.key);
+
+        this.updateTurnIndicator();
+        this.checkConfirmReady();
+    }
+
+    autoSelectPlayer2() {
+        const characters = this.assetManager.getCharacterList().filter(char => this.isCharacterAvailable(char.key)); //
+        if (characters.length === 0) { //
+            console.warn("Aucun personnage disponible pour l'auto-sélection de l'IA."); //
+            return; //
+        }
+        const randomIndex = Math.floor(Math.random() * characters.length); //
+        const randomChar = characters[randomIndex]; //
+        this.setPlayer2Selection(randomChar.key); //
     }
 
     loadPreviewModel(playerNum, charKey) {
         // Supprimer l'ancien preview
         if (playerNum === 1 && this.player1Preview) {
-            this.player1Preview.mesh.dispose();
-            this.player1Preview.animationGroups?.forEach(a => a.dispose());
-            this.player1Preview = null;
+            this.player1Preview.mesh.dispose(); //
+            this.player1Preview.animationGroups?.forEach(a => a.dispose()); //
+            this.player1Preview = null; //
         }
         if (playerNum === 2 && this.player2Preview) {
-            this.player2Preview.mesh.dispose();
-            this.player2Preview.animationGroups?.forEach(a => a.dispose());
-            this.player2Preview = null;
+            this.player2Preview.mesh.dispose(); //
+            this.player2Preview.animationGroups?.forEach(a => a.dispose()); //
+            this.player2Preview = null; //
         }
 
         try {
-            const clone = this.assetManager.cloneCharacterByKey(charKey);
-            const mesh = clone.mesh;
+            const clone = this.assetManager.cloneCharacterByKey(charKey); //
+            const mesh = clone.mesh; //
 
             if (playerNum === 1) {
-                mesh.position = new BABYLON.Vector3(-2.3, 0, -6);
-                mesh.rotation = new BABYLON.Vector3(0, -Math.PI/6, 0);
-                this.player1Preview = clone;
+                mesh.position = new BABYLON.Vector3(-2.3, 0, -6); //
+                mesh.rotation = new BABYLON.Vector3(0, -Math.PI/6, 0); //
+                this.player1Preview = clone; //
             } else {
-                mesh.position = new BABYLON.Vector3(2.45, 0, -6);
-                mesh.rotation = new BABYLON.Vector3(0, Math.PI/6, 0);
-                this.player2Preview = clone;
+                mesh.position = new BABYLON.Vector3(2.45, 0, -6); //
+                mesh.rotation = new BABYLON.Vector3(0, Math.PI/6, 0); //
+                this.player2Preview = clone; //
             }
 
             // Jouer l'animation idle si disponible
-            if (clone.animationGroups && clone.animationGroups.length > 0) {
-                const idle = clone.animationGroups.find(
-                    ag => ag.name.toLowerCase().includes("idle")
-                ) || clone.animationGroups[0];
-                idle.start(true);
+            if (clone.animationGroups && clone.animationGroups.length > 0) { //
+                const idle = clone.animationGroups.find( //
+                    ag => ag.name.toLowerCase().includes("idle") //
+                ) || clone.animationGroups[0]; //
+                idle.start(true); //
             }
         } catch (e) {
-            console.warn(`Impossible de charger le preview pour ${charKey}:`, e);
+            console.warn(`Impossible de charger le preview pour ${charKey}:`, e); //
         }
     }
 
     checkConfirmReady() {
-        if (this.player1Selection && this.player2Selection) {
-            this.confirmButton.isVisible = true;
-            this.turnIndicator.text = "PRÊT ! | 準備完了！";
-            this.turnIndicator.color = "#22c55e";
+        if (this.gameMode === "solo") {
+            if (this.player1Selection && this.player2Selection) { //
+                this.confirmButton.isVisible = true; //
+                this.turnIndicator.text = "PRÊT ! | 準備完了！"; //
+                this.turnIndicator.color = "#22c55e"; //
+            } else {
+                this.confirmButton.isVisible = false;
+            }
+        } else {
+            // Mode PvP : Le bouton général n'apparaît que si J1 ET J2 ont cliqué sur VALIDER
+            if (this.player1Ready && this.player2Ready) {
+                this.confirmButton.isVisible = true;
+                this.turnIndicator.text = "PRÊT POUR LE COMBAT ! | 戦闘準備完了！";
+                this.turnIndicator.color = "#22c55e";
+            } else {
+                this.confirmButton.isVisible = false;
+            }
         }
     }
 
     updateTurnIndicator() {
-        if (this.activePlayer === 1) {
-            this.turnIndicator.text = "▶ JOUEUR 1 - CHOISISSEZ VOTRE PERSONNAGE";
+        if (!this.turnIndicator) return;
+
+        if (this.gameMode === "solo") {
+            if (this.player1Selection) {
+                this.turnIndicator.text = "▶ CLIQUEZ SUR CONFIRMER POUR LANCER LE COMBAT";
+                this.turnIndicator.color = "#22c55e";
+            } else {
+                this.turnIndicator.text = "▶ JOUEUR 1 - CHOISISSEZ VOTRE PERSONNAGE"; //
+                this.turnIndicator.color = "#8b5cf6"; //
+            }
+            return;
+        }
+
+        // Mode PvP
+        if (this.player1Ready && this.player2Ready) {
+            this.turnIndicator.text = "TOUT LE MONDE EST PRÊT !";
+            this.turnIndicator.color = "#22c55e";
+        } else if (!this.player1Ready && this.activePlayer === 1) {
+            this.turnIndicator.text = "▶ JOUEUR 1 - CHOISISSEZ & VALIDEZ VOTRE PERSONNAGE";
             this.turnIndicator.color = "#8b5cf6";
-        } else {
-            this.turnIndicator.text = "▶ JOUEUR 2 - CHOISISSEZ VOTRE PERSONNAGE";
+        } else if (!this.player2Ready && this.activePlayer === 2) {
+            this.turnIndicator.text = "▶ JOUEUR 2 - CHOISISSEZ & VALIDEZ VOTRE PERSONNAGE";
             this.turnIndicator.color = "#ef4444";
+        } else if (this.player1Ready && !this.player2Ready) {
+            this.turnIndicator.text = "▶ EN ATTENTE DE LA VALIDATION DU JOUEUR 2";
+            this.turnIndicator.color = "#ef4444";
+        } else if (!this.player1Ready && this.player2Ready) {
+            this.turnIndicator.text = "▶ EN ATTENTE DE LA VALIDATION DU JOUEUR 1";
+            this.turnIndicator.color = "#8b5cf6";
         }
     }
 
     confirmSelection() {
-        if (!this.player1Selection || !this.player2Selection) return;
+        if (this.gameMode === "pvp" && (!this.player1Ready || !this.player2Ready)) return;
+        if (!this.player1Selection || !this.player2Selection) return; //
 
         this.sceneManager.switchTo('FightScene', {
             city: this.city,
@@ -565,6 +681,7 @@ export class CharactersSelectionScene {
         buttonText.color = "#e8d5f2";
         buttonText.fontSize = 18;
         buttonText.fontFamily = "'Orbitron', sans-serif";
+        buttonText.isHitTestVisible = false; // ◄ FIX : Sécurité aussi sur le texte des boutons
         button.addControl(buttonText);
 
         button.onPointerEnterObservable.add(() => {
@@ -597,69 +714,69 @@ export class CharactersSelectionScene {
     }
 
     isCharacterAvailable(charKey) {
-        return this.availableCharacters.has(charKey);
+        return this.availableCharacters.has(charKey); //
     }
 
     createCursedEnergyParticles() {
-        this.particleSystem = new BABYLON.ParticleSystem("selCursedEnergy", 200, this.scene);
-        this.particleSystem.particleTexture = new BABYLON.Texture(
-            "https://playground.babylonjs.com/textures/flare.png",
-            this.scene
+        this.particleSystem = new BABYLON.ParticleSystem("selCursedEnergy", 200, this.scene); //
+        this.particleSystem.particleTexture = new BABYLON.Texture( //
+            "https://playground.babylonjs.com/textures/flare.png", //
+            this.scene //
         );
 
-        this.particleSystem.emitter = new BABYLON.Vector3(0, 0, 0);
-        this.particleSystem.minEmitBox = new BABYLON.Vector3(-15, -10, 2);
-        this.particleSystem.maxEmitBox = new BABYLON.Vector3(15, 10, 2);
+        this.particleSystem.emitter = new BABYLON.Vector3(0, 0, 0); //
+        this.particleSystem.minEmitBox = new BABYLON.Vector3(-15, -10, 2); //
+        this.particleSystem.maxEmitBox = new BABYLON.Vector3(15, 10, 2); //
 
-        this.particleSystem.color1 = new BABYLON.Color4(0.55, 0.36, 0.96, 0.6);
-        this.particleSystem.color2 = new BABYLON.Color4(0.39, 0.40, 0.95, 0.4);
-        this.particleSystem.colorDead = new BABYLON.Color4(0.1, 0.05, 0.2, 0);
+        this.particleSystem.color1 = new BABYLON.Color4(0.55, 0.36, 0.96, 0.6); //
+        this.particleSystem.color2 = new BABYLON.Color4(0.39, 0.40, 0.95, 0.4); //
+        this.particleSystem.colorDead = new BABYLON.Color4(0.1, 0.05, 0.2, 0); //
 
-        this.particleSystem.minSize = 0.02;
-        this.particleSystem.maxSize = 0.1;
-        this.particleSystem.minLifeTime = 2;
-        this.particleSystem.maxLifeTime = 4;
-        this.particleSystem.emitRate = 60;
+        this.particleSystem.minSize = 0.02; //
+        this.particleSystem.maxSize = 0.1; //
+        this.particleSystem.minLifeTime = 2; //
+        this.particleSystem.maxLifeTime = 4; //
+        this.particleSystem.emitRate = 60; //
 
-        this.particleSystem.direction1 = new BABYLON.Vector3(-0.2, 0.3, 0);
-        this.particleSystem.direction2 = new BABYLON.Vector3(0.2, 0.8, 0);
-        this.particleSystem.minEmitPower = 0.2;
-        this.particleSystem.maxEmitPower = 0.6;
+        this.particleSystem.direction1 = new BABYLON.Vector3(-0.2, 0.3, 0); //
+        this.particleSystem.direction2 = new BABYLON.Vector3(0.2, 0.8, 0); //
+        this.particleSystem.minEmitPower = 0.2; //
+        this.particleSystem.maxEmitPower = 0.6; //
 
-        this.particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
-        this.particleSystem.start();
+        this.particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD; //
+        this.particleSystem.start(); //
     }
 
     animateMenuEntry(element) {
-        element.alpha = 0;
-        element.scaleX = 0.8;
-        element.scaleY = 0.8;
+        element.alpha = 0; //
+        element.scaleX = 0.8; //
+        element.scaleY = 0.8; //
 
-        let frame = 0;
-        const duration = 30;
+        let frame = 0; //
+        const duration = 30; //
 
         const animationInterval = setInterval(() => {
-            frame++;
-            const progress = frame / duration;
-            const eased = 1 - Math.pow(1 - progress, 3);
+            frame++; //
+            const progress = frame / duration; //
+            const eased = 1 - Math.pow(1 - progress, 3); //
 
-            element.alpha = eased;
-            element.scaleX = 0.8 + (0.2 * eased);
-            element.scaleY = 0.8 + (0.2 * eased);
+            element.alpha = eased; //
+            element.scaleX = 0.8 + (0.2 * eased); //
+            element.scaleY = 0.8 + (0.2 * eased); //
 
-            if (frame >= duration) {
-                clearInterval(animationInterval);
+            if (frame >= duration) { //
+                clearInterval(animationInterval); //
             }
         }, 16);
     }
 
     setupKeyboard() {
-        this.scene.onKeyboardObservable.add((kbInfo) => {
-            if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
-                switch (kbInfo.event.key) {
-                    case "Escape":
-                        this.sceneManager.switchTo('MenuScene');
-                        break;
+        this.scene.onKeyboardObservable.add((kbInfo) => { //
+            if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) { //
+                switch (kbInfo.event.key) { //
+                    case "Escape": //
+                        this.sceneManager.switchTo('MenuScene'); //
+                        break; //
                 }
             }
         });
@@ -669,28 +786,28 @@ export class CharactersSelectionScene {
     // CYCLE DE VIE
     // ==========================================
     onDispose() {
-        if (this.player1Preview) {
-            this.player1Preview.mesh?.dispose();
-            this.player1Preview.animationGroups?.forEach(a => a.dispose());
+        if (this.player1Preview) { //
+            this.player1Preview.mesh?.dispose(); //
+            this.player1Preview.animationGroups?.forEach(a => a.dispose()); //
         }
-        if (this.player2Preview) {
-            this.player2Preview.mesh?.dispose();
-            this.player2Preview.animationGroups?.forEach(a => a.dispose());
+        if (this.player2Preview) { //
+            this.player2Preview.mesh?.dispose(); //
+            this.player2Preview.animationGroups?.forEach(a => a.dispose()); //
         }
-        if (this.particleSystem) {
-            this.particleSystem.dispose();
+        if (this.particleSystem) { //
+            this.particleSystem.dispose(); //
         }
-        if (this.advancedTexture) {
-            this.advancedTexture.dispose();
+        if (this.advancedTexture) { //
+            this.advancedTexture.dispose(); //
         }
-        if (this.scene) {
-            this.scene.dispose();
+        if (this.scene) { //
+            this.scene.dispose(); //
         }
     }
 
     render() {
-        if (this.scene) {
-            this.scene.render();
+        if (this.scene) { //
+            this.scene.render(); //
         }
     }
 }
