@@ -1,7 +1,7 @@
 import * as GUI from '@babylonjs/gui';
 
 export class Timer {
-    constructor(advancedTexture, initialTime = 99) {
+    constructor(advancedTexture, initialTime) {
         this.timeLeft = initialTime;
         this.textBlock = null;
         this._createUI(advancedTexture);

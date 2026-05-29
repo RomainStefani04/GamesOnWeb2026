@@ -14,7 +14,7 @@ export class UIManager {
             p2: new HealthBar(player2, this.advancedTexture, false)
         };
 
-        this.timer = new Timer(this.advancedTexture, 99);
+        this.timer = new Timer(this.advancedTexture, 150);
         this.endScreen = new EndScreen(this.advancedTexture);
     }
 

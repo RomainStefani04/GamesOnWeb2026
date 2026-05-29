@@ -547,14 +547,14 @@ export class CharactersSelectionScene {
     }
 
     autoSelectPlayer2() {
-        const characters = this.assetManager.getCharacterList().filter(char => this.isCharacterAvailable(char.key)); //
-        if (characters.length === 0) { //
-            console.warn("Aucun personnage disponible pour l'auto-sélection de l'IA."); //
-            return; //
-        }
-        const randomIndex = Math.floor(Math.random() * characters.length); //
-        const randomChar = characters[randomIndex]; //
-        this.setPlayer2Selection(randomChar.key); //
+        // const characters = this.assetManager.getCharacterList().filter(char => this.isCharacterAvailable(["akaza"])); //
+        // if (characters.length === 0) { //
+        //     console.warn("Aucun personnage disponible pour l'auto-sélection de l'IA."); //
+        //     return; //
+        // }
+        // const randomIndex = Math.floor(Math.random() * characters.length); //
+        // const randomChar = characters[randomIndex]; //
+        this.setPlayer2Selection("akaza"); //
     }
 
     loadPreviewModel(playerNum, charKey) {

@@ -21,7 +21,7 @@ export class Character {
         // Observable pour notifier les hits (remonte vers CombatSystem)
         this.onHit = new BABYLON.Observable();
 
-        this.maxHealth = 100;
+        this.maxHealth = 160;
         this.currentHealth = this.maxHealth;
 
         this.isReadOnly = false; // Permet de bloquer les inputs

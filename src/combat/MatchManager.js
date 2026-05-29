@@ -9,7 +9,7 @@ export class MatchManager {
         this.combatSystem = new CombatSystem(this.player1, this.player2);
         this.uiManager = new UIManager(this.player1, this.player2);
 
-        this.currentTime = 99;
+        this.currentTime = 150;
         this.timerAccumulator = 0;
         this.isMatchOver = false;
 
