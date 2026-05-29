@@ -5,9 +5,11 @@ deux joueurs en local.
 
 ---
 
+[La video du jeu est dispo sur ce lien](https://drive.google.com/file/d/1WNjVxh5vyYY1Q6jKRbZ5sCIjVS5phAus/view?usp=sharing)
+
 ## Lancer le jeu
 
-Le jeu est dispo sur ce lien : https://games-on-web2026.vercel.app/
+[Le jeu est dispo sur ce lien](https://cursed-battle-gow26.vercel.app/)
 
 ### Sinon pour le lancer localement :
 
