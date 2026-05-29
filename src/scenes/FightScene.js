@@ -10,14 +10,18 @@ import { MatchManager }      from '../combat/MatchManager';
 import { WeatherSystem }     from '../weather/WeatherSystem';
 import { FootstepDetector }  from '../weather/FootstepDetector';
 import { SettingsUI }        from '../ui/SettingsUI';
+import { AIInputMapper } from '../ai/AiInputMapper';
+import { AIController } from '../ai/AIController';
+import { eventBus } from '../core/EventBus';
 
 export class FightScene {
-    constructor(engine, assetManager, havokInstance, city, characters) {
+    constructor(engine, assetManager, havokInstance, city, characters, gameMode) {
         this.engine        = engine;
         this.assetManager  = assetManager;
         this.havokInstance = havokInstance;
         this.city          = city;
         this.characters    = characters;
+        this.gameMode      = gameMode;
         this.isPaused      = false;
 
         this.deltaTime = 0;
@@ -33,6 +37,8 @@ export class FightScene {
         this._footDetector1  = null;
         this._footDetector2  = null;
         this._punchAnimNames = ['jab', 'cross'];
+
+        this.projectiles = [];
 
         this.initScene();
     }
@@ -99,6 +105,14 @@ export class FightScene {
 
         this.matchManager = new MatchManager(this.player1, this.player2);
         if (this._weatherMode === 'rain') this._initWeatherSystems();
+
+        eventBus.on('projectile:spawned', (projectile) => {
+            this.projectiles.push(projectile);
+        });
+
+        eventBus.on('projectile:destroyed', (projectile) => {
+            this.projectiles = this.projectiles.filter(p => p !== projectile);
+        });
     }
 
     _initWeatherSystems() {
@@ -131,11 +145,21 @@ export class FightScene {
         this.player1.setPosition(new BABYLON.Vector3(0, 0, -2));
 
         const clonePlayer2 = this.assetManager.cloneCharacterByKey(this.characters.player2);
-        this.player2 = new Player(
-            this.scene, 'player2', this.characters.player2,
-            new InputMapper(this.inputManager, 'player2'),
-            clonePlayer2?.mesh, clonePlayer2?.animationGroups
-        );
+        if (this.gameMode === 'solo') {
+            this.AIController = new AIController(this);
+            this.player2 = new Player(
+                this.scene, 'player2', this.characters.player2,
+                new AIInputMapper(this.AIController),
+                clonePlayer2?.mesh, clonePlayer2?.animationGroups
+            );
+            this.AIController.setPlayers(this.player2, this.player1);
+        } else {
+            this.player2 = new Player(
+                this.scene, 'player2', this.characters.player2,
+                new InputMapper(this.inputManager, 'player2'),
+                clonePlayer2?.mesh, clonePlayer2?.animationGroups
+            );
+        }
         this.player2.setPosition(new BABYLON.Vector3(0, 0, 2));
     }
 
@@ -153,7 +177,11 @@ export class FightScene {
 
         if (this.player1 && this.player2) this.updateFacingDirections();
         this.player1?.update(this.deltaTime);
+        if (this.gameMode === 'solo') {
+            this.AIController.update(this.deltaTime);
+        }
         this.player2?.update(this.deltaTime);
+        this.projectiles.forEach(p => p.update(this.deltaTime));
         this.matchManager?.updateMatchTimer(this.deltaTime);
     }
 
@@ -165,6 +193,9 @@ export class FightScene {
     }
 
     onDispose() {
+        eventBus.clear('projectile:spawned');
+        eventBus.clear('projectile:destroyed');
+        
         this._weatherSystem?.dispose();
         this._footDetector1?.dispose();
         this._footDetector2?.dispose();

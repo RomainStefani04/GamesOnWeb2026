@@ -38,7 +38,8 @@ export class Game {
         //     characters: {
         //         player1: 'akaza',
         //         player2: 'akaza'
-        //     }
+        //     },
+        //     gameMode: 'solo'
         // });
 
         this.initialized = true;

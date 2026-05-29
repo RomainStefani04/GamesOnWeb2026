@@ -6,6 +6,7 @@ export const MoveRegistry = {
         boneName: "LeftHand",
         knockback: 150,
         stunDuration: 0.3, // en secondes
+        cooldown: 0, // en secondes
         isSweep: false,
         hitbox: { radius: 0.15, activeFrame: 18, endFrame: 30 }
     },
@@ -16,6 +17,7 @@ export const MoveRegistry = {
         boneName: "RightHand",
         knockback: 280,
         stunDuration: 0.6,
+        cooldown: 0,
         isSweep: false,
         hitbox: { radius: 0.15, activeFrame: 61, endFrame: 73 }
     },
@@ -26,6 +28,7 @@ export const MoveRegistry = {
         boneName: "RightFoot",
         knockback: 200,
         stunDuration: 0.4,
+        cooldown: 0,
         isSweep: false,
         hitbox: { radius: 0.2, activeFrame: 30, endFrame: 80 }
     },
@@ -36,6 +39,7 @@ export const MoveRegistry = {
         boneName: "LeftFoot",
         knockback: 300,
         stunDuration: 0.7,
+        cooldown: 0,
         isSweep: false,
         hitbox: { radius: 0.2, activeFrame: 30, endFrame: 60 }
     },
@@ -46,6 +50,7 @@ export const MoveRegistry = {
         boneName: "RightFoot",
         knockback: 250,
         stunDuration: 1.3,
+        cooldown: 0.5,
         isSweep: true,
         hitbox: { radius: 0.2, activeFrame: 40, endFrame: 120 }
     },
@@ -56,6 +61,7 @@ export const MoveRegistry = {
         boneName: "RightHand",
         knockback: 250,
         stunDuration: 0.8,
+        cooldown: 2.0, // exemple de cooldown de 2 secondes
         isSweep: false,
         projectileSpeed: 3,
         projectileLifetime: 7,

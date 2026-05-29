@@ -543,7 +543,8 @@ export class CharactersSelectionScene {
             characters: {
                 player1: this.player1Selection,
                 player2: this.player2Selection
-            }
+            },
+            gameMode: this.gameMode
         });
     }
 

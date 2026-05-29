@@ -30,7 +30,7 @@ export class SceneManager {
                 break;
 
             case 'FightScene':
-                await this.loadFightScene(options.city, options.characters);
+                await this.loadFightScene(options.city, options.characters, options.gameMode);
                 break;
         }
     }
@@ -56,13 +56,13 @@ export class SceneManager {
         this.currentScene = charSelection;
     }
     
-    async loadFightScene(city, characters) {
+    async loadFightScene(city, characters, gameMode) {
         const loadingScene = new LoadingScene(this.engine);
         eventBus.emit('scene:loading');
         this.currentScene = loadingScene;
 
         const fightScene = new FightScene(
-            this.engine, this.assetManager, this.havokInstance, city, characters
+            this.engine, this.assetManager, this.havokInstance, city, characters, gameMode
         );
 
         this.assetManager.init(fightScene.scene);

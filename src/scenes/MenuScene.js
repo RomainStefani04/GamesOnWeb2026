@@ -17,7 +17,7 @@ export class MenuScene {
         this.selectedLevel   = 1;
         this.gameMode        = null;
         this.settingsUI      = null;   // ← instance partagée
-        this.availableModes  = { solo: false, pvp: true };
+        this.availableModes  = { solo: true, pvp: true };
         this.availableLevels = { 1: false, 2: false, 3: true, 4: false, 5: false };
 
         this.init();

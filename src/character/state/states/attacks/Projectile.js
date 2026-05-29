@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { FireballVisuals } from '../../../../utils/FireballVisuals';
+import { eventBus } from '../../../../core/EventBus';
 
 export class Projectile {
     constructor(character, moveData) {
@@ -8,8 +9,8 @@ export class Projectile {
         this.moveData = moveData;
         this.hasHit = false;
 
-        const speed = moveData.projectileSpeed ?? 8;
-        const direction = character.facingDirection ?? 1;
+        this.speed = moveData.projectileSpeed ?? 8;
+        this.direction = character.facingDirection ?? 1;
         const lifetime = moveData.projectileLifetime ?? 3;
         
 
@@ -17,11 +18,8 @@ export class Projectile {
 
         //this.visuals = new FireballVisuals(this.scene, this.mesh);
         
-        // Gère le déplacement et la collision
-        this.updateObserver = this.scene.onBeforeRenderObservable.add(() => {
-            this.update(speed, direction);
-            this.checkCollisions();
-        });
+        // On informe le jeu qu'un projectile a été créé
+        eventBus.emit('projectile:spawned', this);
 
         // Détruit le projectile après sa durée de vie
         setTimeout(() => this.destroy(), lifetime * 1000);
@@ -82,10 +80,10 @@ export class Projectile {
         this.pSystem.start();
     }
 
-    update(speed, direction) {
+    update(deltaTime) {
         if (!this.mesh) return;
-        const deltaTime = this.scene.getEngine().getDeltaTime() / 1000;
-        this.mesh.position.z += direction * speed * deltaTime;
+        this.mesh.position.z += this.direction * this.speed * deltaTime;
+        this.checkCollisions();
     }
 
     checkCollisions() {
@@ -119,10 +117,9 @@ export class Projectile {
     }
 
     destroy() {
-        if (this.updateObserver) {
-            this.scene.onBeforeRenderObservable.remove(this.updateObserver);
-            this.updateObserver = null;
-        }
+        // Enlève le projectile de la liste globale
+        eventBus.emit('projectile:destroyed', this);
+
         if (this.pSystem) {
             this.pSystem.stop();
             // On attend un peu que les particules existantes disparaissent avant de dispose

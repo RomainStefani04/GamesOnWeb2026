@@ -23,6 +23,7 @@ export class CharacterStateMachine {
         this.inputMapper = inputMapper;
         this.states = {};
         this.currentState = null;
+        this.cooldowns = new Map();
 
         this.initStates();
     }
@@ -72,11 +73,20 @@ export class CharacterStateMachine {
 
     //update de l état courant
     update(deltaTime) {
+        this.updateCooldowns(deltaTime);
         this.updateFacingInput();
         if (!this.character.isReadOnly && !this.currentState.isBlocking) {
             this.handleInput();
         }
         this.currentState.update(deltaTime);
+    }
+
+    updateCooldowns(deltaTime) {
+        for (const [key, time] of this.cooldowns.entries()) {
+            if (time > 0) {
+                this.cooldowns.set(key, Math.max(0, time - deltaTime));
+            }
+        }
     }
 
     updateFacingInput() {
@@ -101,8 +111,17 @@ export class CharacterStateMachine {
         }
         for (const [input, state] of this.mapStateAttack.entries()) {
             if (this.inputMapper.isKeyPressed(input)) {
-                this.changeState(state);
-                return;
+                const moveData = state.moveData;
+                const cooldownDuration = (moveData && moveData.cooldown) ? moveData.cooldown : 0;
+                const currentCooldown = this.cooldowns.get(state.name) || 0;
+
+                if (currentCooldown <= 0) {
+                    if (cooldownDuration > 0) {
+                        this.cooldowns.set(state.name, cooldownDuration);
+                    }
+                    this.changeState(state);
+                    return;
+                }
             }
         }
         // Recuperer la cle de la valeur actuelle dans la map
